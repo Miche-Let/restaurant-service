@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: michelet
+
+server:
+  port: ${PORT} #각자 port
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL}
