@@ -2,7 +2,7 @@ package com.michelet.restaurant.presentation;
 
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.michelet.restaurant.application.RestaurantQueryService;
@@ -29,6 +29,8 @@ class RestaurantControllerTest {
 
         mockMvc.perform(get("/api/v1/restaurants/health"))
                 .andExpect(status().isOk())
-                .andExpect(content().string("restaurant-service is healthy"));
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data").value("restaurant-service is healthy"))
+                .andExpect(jsonPath("$.message").value("Restaurant Query Service is running"));
     }
 }
