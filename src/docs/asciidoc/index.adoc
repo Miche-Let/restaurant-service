@@ -1,0 +1,18 @@
+= Restaurant Service API Guide
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 2
+:sectlinks:
+:sectnums:
+
+== Health Check
+
+레스토랑 서비스의 가용 상태를 확인합니다.
+
+=== Request
+include::{snippets}/restaurant-health-check/http-request.adoc[]
+
+=== Response
+include::{snippets}/restaurant-health-check/http-response.adoc[]
