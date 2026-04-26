@@ -1,11 +1,12 @@
 spring:
   application:
-    name: michelet
+    name: restaurant-service
 
 server:
-  port: ${PORT} #각자 port
+  port: 19300
 
-eureka:
-  client:
-    service-url:
-      defaultZone: ${EUREKA_SERVER_URL}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
