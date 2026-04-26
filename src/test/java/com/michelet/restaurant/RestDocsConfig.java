@@ -14,5 +14,10 @@ public class RestDocsConfig implements RestDocsMockMvcConfigurationCustomizer {
         configurer.operationPreprocessors()
                 .withRequestDefaults(prettyPrint())
                 .withResponseDefaults(prettyPrint());
+
+        configurer.uris()
+                .withScheme("http")
+                .withHost("localhost")
+                .withPort(19300);
     }
 }
