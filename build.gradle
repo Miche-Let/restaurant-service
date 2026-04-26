@@ -27,7 +27,6 @@ repositories {
 
 ext {
     set('springCloudVersion', "2025.0.1")
-    snippetsDir = file("build/generated-snippets")
 }
 
 dependencies {
