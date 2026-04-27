@@ -42,3 +42,55 @@ include::{snippets}/create-restaurant/http-response.adoc[]
 
 ==== Response Fields
 include::{snippets}/create-restaurant/response-fields.adoc[]
+
+=== 외부 식당 상세 조회
+
+사용자가 식당 상세 정보를 조회합니다.
+
+==== 성공
+
+===== Request
+include::{snippets}/get-restaurant/http-request.adoc[]
+
+===== Response
+include::{snippets}/get-restaurant/http-response.adoc[]
+
+===== Response Fields
+include::{snippets}/get-restaurant/response-fields.adoc[]
+
+==== 실패 - 식당 없음
+
+===== Request
+include::{snippets}/get-restaurant-not-found/http-request.adoc[]
+
+===== Response
+include::{snippets}/get-restaurant-not-found/http-response.adoc[]
+
+===== Response Fields
+include::{snippets}/get-restaurant-not-found/response-fields.adoc[]
+
+=== 내부 식당 조회
+
+내부 서비스 또는 운영용으로 식당 상세 정보를 조회합니다.
+
+==== 성공
+
+===== Request
+include::{snippets}/get-internal-restaurant/http-request.adoc[]
+
+===== Response
+include::{snippets}/get-internal-restaurant/http-response.adoc[]
+
+===== Response Fields
+include::{snippets}/get-internal-restaurant/response-fields.adoc[]
+
+==== 실패 - 식당 없음
+
+===== Request
+include::{snippets}/get-internal-restaurant-not-found/http-request.adoc[]
+
+===== Response
+include::{snippets}/get-internal-restaurant-not-found/http-response.adoc[]
+
+===== Response Fields
+include::{snippets}/get-internal-restaurant-not-found/response-fields.adoc[]
