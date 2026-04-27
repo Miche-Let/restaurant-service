@@ -1,10 +1,11 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.5.13'
+    id 'org.springframework.boot' version '3.5.14'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.asciidoctor.jvm.convert' version '4.0.2'
 }
 
-group = 'com.star'
+group = 'com.michelet'
 version = '0.0.1-SNAPSHOT'
 
 java {
@@ -34,12 +35,15 @@ dependencies {
 //	eureka server 등록할 때 사용 권장
 //	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'org.postgresql:postgresql'
     annotationProcessor 'org.projectlombok:lombok'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
@@ -49,6 +53,18 @@ dependencyManagement {
     }
 }
 
+def snippetsDir = file("build/generated-snippets")
+
 tasks.named('test') {
     useJUnitPlatform()
+    outputs.dir snippetsDir
+}
+
+tasks.named('asciidoctor') {
+    inputs.dir snippetsDir
+    dependsOn tasks.named('test')
+    baseDirFollowsSourceFile()
+    attributes(
+            'snippets': snippetsDir
+    )
 }
