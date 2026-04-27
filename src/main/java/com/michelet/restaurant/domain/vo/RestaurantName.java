@@ -2,18 +2,21 @@ package com.michelet.restaurant.domain.vo;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.Objects;
 
+@Getter
+@EqualsAndHashCode(of = "value")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Embeddable
 public class RestaurantName {
 
     @Column(name = "name", nullable = false, length = 100)
     private String value;
-
-    protected RestaurantName() {
-
-    }
 
     private RestaurantName(String value) {
         String normalizedValue = normalize(value);
@@ -35,19 +38,4 @@ public class RestaurantName {
         }
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof RestaurantName that)) {
-            return false;
-        }
-        return Objects.equals(value, that.value);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(value);
-    }
 }
