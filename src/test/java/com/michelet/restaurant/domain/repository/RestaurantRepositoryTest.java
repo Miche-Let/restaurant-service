@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.michelet.restaurant.domain.model.Restaurant;
 import com.michelet.restaurant.domain.model.RestaurantStatus;
 import com.michelet.restaurant.infrastructure.config.JpaAuditingConfig;
+import com.michelet.restaurant.infrastructure.persistence.RestaurantJpaRepository;
 import jakarta.persistence.EntityManager;
 import java.time.LocalTime;
 import java.util.UUID;
@@ -24,7 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 class RestaurantRepositoryTest {
 
     @Autowired
-    private RestaurantRepository restaurantRepository;
+    private RestaurantJpaRepository restaurantRepository;
 
     @Autowired
     private EntityManager entityManager;
