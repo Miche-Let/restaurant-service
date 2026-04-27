@@ -3,9 +3,14 @@
 :icons: font
 :source-highlighter: highlightjs
 :toc: left
-:toclevels: 2
+:toclevels: 3
 :sectlinks:
 :sectnums:
+:snippets: {snippets}
+
+== 개요
+
+Miche-Let restaurant-service API 문서입니다.
 
 == Health Check
 
@@ -16,3 +21,21 @@ include::{snippets}/restaurant-health-check/http-request.adoc[]
 
 === Response
 include::{snippets}/restaurant-health-check/http-response.adoc[]
+
+== 식당 관리
+
+=== 식당 등록
+
+식당 기본 정보를 등록합니다.
+
+==== Request
+include::{snippets}/create-restaurant/http-request.adoc[]
+
+==== Request Fields
+include::{snippets}/create-restaurant/request-fields.adoc[]
+
+==== Response
+include::{snippets}/create-restaurant/http-response.adoc[]
+
+==== Response Fields
+include::{snippets}/create-restaurant/response-fields.adoc[]
