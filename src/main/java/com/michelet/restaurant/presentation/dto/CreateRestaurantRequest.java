@@ -38,6 +38,7 @@ public record CreateRestaurantRequest(
         RestaurantStatus status,
 
         @NotBlank(message = "운영시간 정보는 필수입니다.")
+        @Size(max = 1000, message = "운영시간 정보는 1000자를 초과할 수 없습니다.")
         String businessHours
 
         ) {
