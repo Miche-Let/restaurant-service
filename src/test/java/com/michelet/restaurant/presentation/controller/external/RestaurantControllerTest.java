@@ -12,6 +12,8 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.response
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
+import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 
 
 import java.util.UUID;
@@ -74,6 +76,9 @@ class RestaurantControllerTest {
                 .andDo(document("create-restaurant",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                                headerWithName("X-User-Id").description("식당 소유자 사용자 ID(UUID)")
+                        ),
                         requestFields(
                                 fieldWithPath("name").description("식당 이름"),
                                 fieldWithPath("address").description("식당 주소"),
