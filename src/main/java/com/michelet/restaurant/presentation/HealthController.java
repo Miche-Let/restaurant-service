@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/restaurants")
 @RequiredArgsConstructor
-public class RestaurantController {
+public class HealthController {
 
     private final RestaurantQueryService restaurantQueryService;
 

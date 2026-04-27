@@ -1,0 +1,9 @@
+.gradle
+build
+.idea
+out
+.git
+.gitignore
+*.iml
+*.log
+src/docs
