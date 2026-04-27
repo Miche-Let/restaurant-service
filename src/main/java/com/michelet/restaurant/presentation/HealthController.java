@@ -1,6 +1,6 @@
 package com.michelet.restaurant.presentation;
 
-import com.michelet.restaurant.application.RestaurantQueryService;
+import com.michelet.restaurant.application.service.query.RestaurantQueryService;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
