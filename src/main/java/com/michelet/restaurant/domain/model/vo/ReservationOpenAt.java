@@ -4,7 +4,7 @@ import java.time.LocalTime;
 
 public record ReservationOpenAt(LocalTime value) {
 
-    public ReservationOpenAt{
+    public ReservationOpenAt {
         validate(value);
     }
 
@@ -12,7 +12,7 @@ public record ReservationOpenAt(LocalTime value) {
         return new ReservationOpenAt(value);
     }
 
-    private void validate(LocalTime value) {
+    private static void validate(LocalTime value) {
         if (value == null) {
             throw new IllegalArgumentException("예약 오픈 시각은 필수입니다.");
         }
