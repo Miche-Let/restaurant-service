@@ -11,8 +11,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.michelet.common.exception.GlobalExceptionHandler;
 import com.michelet.restaurant.application.service.query.RestaurantQueryService;
 import com.michelet.restaurant.application.result.GetRestaurantResult;
+import com.michelet.restaurant.domain.exception.RestaurantErrorCode;
+import com.michelet.restaurant.domain.exception.RestaurantException;
 import com.michelet.restaurant.domain.model.RestaurantStatus;
 import java.time.LocalTime;
 import java.util.UUID;
@@ -21,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -30,6 +34,7 @@ import org.springframework.test.web.servlet.MockMvc;
  * 내부 식당 단건 조회 API의 정상 응답과 REST Docs 스니펫 생성을 검증
  */
 @WebMvcTest(RestaurantInternalController.class)
+@Import(GlobalExceptionHandler.class)
 @AutoConfigureRestDocs(
         uriScheme = "http",
         uriHost = "localhost",
@@ -91,6 +96,31 @@ class RestaurantInternalControllerTest {
                                 fieldWithPath("data.avgMealDurationMin").description("평균 식사 시간(분)"),
                                 fieldWithPath("data.status").description("식당 상태"),
                                 fieldWithPath("data.businessHours").description("운영시간 정보"),
+                                fieldWithPath("timestamp").description("응답 시간")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("내부 식당 조회 실패")
+    void 내부식당조회실패() throws Exception {
+        UUID restaurantId = UUID.randomUUID();
+
+        given(restaurantQueryService.getRestaurant(restaurantId))
+                .willThrow(new RestaurantException(RestaurantErrorCode.RESTAURANT_404_NOT_FOUND));
+
+        mockMvc.perform(get("/internal/v1/restaurants/{restaurantId}", restaurantId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value("RESTAURANT_404_NOT_FOUND"))
+                .andExpect(jsonPath("$.message").value("식당을 찾을 수 없습니다."))
+                .andDo(document("get-internal-restaurant-not-found",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        responseFields(
+                                fieldWithPath("success").description("성공 여부"),
+                                fieldWithPath("code").description("에러 코드"),
+                                fieldWithPath("message").description("에러 메시지"),
                                 fieldWithPath("timestamp").description("응답 시간")
                         )
                 ));
