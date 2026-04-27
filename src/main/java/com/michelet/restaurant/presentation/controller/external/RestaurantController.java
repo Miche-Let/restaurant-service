@@ -28,7 +28,7 @@ public class RestaurantController {
 
     /**
      * 식당 등록 API
-     * <p>
+     *
      * 시큐리티 미구현 상태
      * 임시로 X-User-Id 전달받음
      * 추후 변경
