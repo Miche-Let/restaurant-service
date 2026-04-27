@@ -1,4 +1,4 @@
-package com.michelet.restaurant.common.config;
+package com.michelet.restaurant.infrastructure.config;
 
 import org.slf4j.MDC;
 import org.springframework.context.annotation.Bean;
