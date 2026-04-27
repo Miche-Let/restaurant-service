@@ -21,15 +21,6 @@ public class RestaurantQueryService {
     }
 
     /**
-     * 헬스체크용 상태 메시지를 반환
-     *
-     * 현재 restaurant-service가 정상적으로 기동 중인지 확인할 때 사용
-     */
-    public String getHealthStatus() {
-        return "Restaurant Query Service is Healthy";
-    }
-
-    /**
      * 식당 단건 정보를 조회
      *
      * 외부 상세 조회 API / 내부 조회 API에서 공통으로 사용하는 조회 메서드
