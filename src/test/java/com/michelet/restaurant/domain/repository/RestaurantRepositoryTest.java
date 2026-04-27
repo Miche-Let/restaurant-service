@@ -66,6 +66,7 @@ class RestaurantRepositoryTest {
     @DisplayName("ownerId로 식당 목록을 조회할 수 있다")
     void findAllByOwnerId() {
         UUID ownerId = UUID.randomUUID();
+        UUID anotherOwnerId = UUID.randomUUID();
 
         Restaurant firstRestaurant = Restaurant.create(
                 ownerId,
@@ -91,8 +92,21 @@ class RestaurantRepositoryTest {
                 "MON-FRI 17:00-22:00"
         );
 
+        Restaurant anotherOwnersRestaurant = Restaurant.create(
+                anotherOwnerId,
+                "Another Owner Restaurant",
+                "서울특별시 서초구 1",
+                "02-3333-3333",
+                "다른 사장 식당",
+                LocalTime.of(12, 0),
+                80,
+                RestaurantStatus.OPEN,
+                "MON-FRI 12:00-21:00"
+        );
+
         restaurantRepository.save(firstRestaurant);
         restaurantRepository.save(secondRestaurant);
+        restaurantRepository.save(anotherOwnersRestaurant);
 
         entityManager.flush();
         entityManager.clear();
@@ -102,7 +116,8 @@ class RestaurantRepositoryTest {
         assertThat(restaurants).hasSize(2);
         assertThat(restaurants)
                 .extracting(Restaurant::getName)
-                .containsExactlyInAnyOrder("MicheLet Lunch", "MicheLet Dinner");
+                .containsExactlyInAnyOrder("MicheLet Lunch", "MicheLet Dinner")
+                .doesNotContain("Another Owner Restaurant");
     }
 
     @TestConfiguration
