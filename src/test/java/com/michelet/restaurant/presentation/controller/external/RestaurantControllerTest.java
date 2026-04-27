@@ -20,6 +20,7 @@ import java.util.UUID;
 
 import com.michelet.restaurant.application.result.CreateRestaurantResult;
 import com.michelet.restaurant.application.service.command.RestaurantCommandService;
+import com.michelet.restaurant.application.service.query.RestaurantQueryService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,9 @@ class RestaurantControllerTest {
 
     @MockitoBean
     private RestaurantCommandService restaurantCommandService;
+
+    @MockitoBean
+    private RestaurantQueryService restaurantQueryService;
 
     @Test
     @DisplayName("식당을 등록할 수 있다")
