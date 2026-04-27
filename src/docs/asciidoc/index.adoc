@@ -31,6 +31,9 @@ include::{snippets}/restaurant-health-check/http-response.adoc[]
 ==== Request
 include::{snippets}/create-restaurant/http-request.adoc[]
 
+==== Request Headers
+include::{snippets}/create-restaurant/request-headers.adoc[]
+
 ==== Request Fields
 include::{snippets}/create-restaurant/request-fields.adoc[]
 
