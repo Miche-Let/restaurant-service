@@ -21,6 +21,12 @@ public class RestaurantInternalController {
         this.restaurantQueryService = restaurantQueryService;
     }
 
+    /**
+     * 내부 식당 단건 조회 API
+     *
+     * restaurantId를 기준으로 식당 정보를 조회
+     * 내부 API이므로 ownerId를 포함한 상세 정보를 반환
+     */
     @GetMapping("/{restaurantId}")
     public ApiResponse<GetInternalRestaurantResponse> getRestaurant(@PathVariable UUID restaurantId) {
         GetRestaurantResult result = restaurantQueryService.getRestaurant(restaurantId);
