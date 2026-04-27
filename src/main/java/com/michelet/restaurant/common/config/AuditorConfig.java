@@ -20,7 +20,6 @@ public class AuditorConfig {
      *
      * 추후 실제 인증이 붙으면 사용자 UUID를 꺼내도록 수정
      */
-    /
     @Bean
     public AuditorAware<UUID> auditorAware() {
         return () -> {
