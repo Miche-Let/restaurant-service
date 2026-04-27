@@ -17,7 +17,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(com.michelet.restaurant.presentation.RestaurantController.class)
+@WebMvcTest(HealthController.class)
 @AutoConfigureRestDocs(
         uriScheme = "http",
         uriHost = "localhost",
