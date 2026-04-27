@@ -48,6 +48,12 @@ public class RestaurantController {
         );
     }
 
+    /**
+     * 외부 식당 상세 조회 API
+     *
+     * 사용자가 식당 상세 정보를 조회할 때 사용하는 외부 API
+     * ownerId 같은 내부 식별 정보는 응답에 포함x
+     */
     @GetMapping("/{restaurantId}")
     public ApiResponse<GetRestaurantResponse> getRestaurant(@PathVariable UUID restaurantId) {
 
