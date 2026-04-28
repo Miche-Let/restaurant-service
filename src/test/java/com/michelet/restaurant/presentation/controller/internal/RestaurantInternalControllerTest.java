@@ -24,7 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 /**
  * 내부 식당 조회 컨트롤러 테스트
  *
- * 내부 식당 단건 조회 API의 정상 응답과 예외 응답을 검증한다.
+ * 내부 식당 단건 조회 API의 정상 응답과 예외 응답을 검증
  */
 @WebMvcTest(RestaurantInternalController.class)
 @Import(GlobalExceptionHandler.class)

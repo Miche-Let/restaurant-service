@@ -29,7 +29,7 @@ import org.springframework.test.web.servlet.MockMvc;
 /**
  * 외부 식당 API 컨트롤러 테스트
  *
- * 식당 등록, 외부 식당 상세 조회, 예외 응답을 검증한다.
+ * 식당 등록, 외부 식당 상세 조회, 예외 응답을 검증
  */
 @WebMvcTest(RestaurantController.class)
 @Import(GlobalExceptionHandler.class)

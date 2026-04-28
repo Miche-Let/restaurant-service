@@ -16,7 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 /**
  * 헬스체크 컨트롤러 테스트
  *
- * restaurant-service 헬스체크 엔드포인트의 정상 응답을 검증한다.
+ * restaurant-service 헬스체크 엔드포인트의 정상 응답을 검증
  */
 @WebMvcTest(HealthController.class)
 class HealthControllerTest {
