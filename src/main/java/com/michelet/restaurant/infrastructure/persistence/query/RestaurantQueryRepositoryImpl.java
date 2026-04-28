@@ -99,7 +99,7 @@ public class RestaurantQueryRepositoryImpl implements RestaurantQueryRepository 
             Order direction = sortOrder.isAscending() ? Order.ASC : Order.DESC;
 
             switch (sortOrder.getProperty()) {
-                case "createAt" -> orderSpecifiers.add(new OrderSpecifier<>(direction, restaurant.createdAt));
+                case "createdAt" -> orderSpecifiers.add(new OrderSpecifier<>(direction, restaurant.createdAt));
                 case "name" -> orderSpecifiers.add(new OrderSpecifier<>(direction, restaurant.name));
                 case "status" -> orderSpecifiers.add(new OrderSpecifier<>(direction, restaurant.status));
                 default -> {
