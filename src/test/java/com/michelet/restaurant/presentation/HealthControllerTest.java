@@ -1,21 +1,19 @@
 package com.michelet.restaurant.presentation;
 
-import static org.mockito.BDDMockito.given;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import com.michelet.restaurant.application.RestaurantQueryService;
+import com.michelet.restaurant.application.service.HealthCheckService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+
+import static org.mockito.BDDMockito.given;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(HealthController.class)
 @AutoConfigureRestDocs(
@@ -29,11 +27,11 @@ class HealthControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private RestaurantQueryService restaurantQueryService;
+    private HealthCheckService healthCheckService;
 
     @Test
     void healthCheck() throws Exception {
-        given(restaurantQueryService.getHealthStatus())
+        given(healthCheckService.getHealthStatus())
                 .willReturn("Restaurant Query Service is Healthy");
 
         mockMvc.perform(get("/api/v1/restaurants/health"))
