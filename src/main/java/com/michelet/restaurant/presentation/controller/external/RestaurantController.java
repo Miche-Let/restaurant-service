@@ -2,14 +2,20 @@ package com.michelet.restaurant.presentation.controller.external;
 
 import com.michelet.common.response.ApiResponse;
 import com.michelet.restaurant.application.command.CreateRestaurantCommand;
+import com.michelet.restaurant.application.query.RestaurantSearchCondition;
 import com.michelet.restaurant.application.result.CreateRestaurantResult;
 import com.michelet.restaurant.application.result.GetRestaurantResult;
+import com.michelet.restaurant.application.result.RestaurantSummaryResult;
 import com.michelet.restaurant.application.service.command.RestaurantCommandService;
 import com.michelet.restaurant.application.service.query.RestaurantQueryService;
+import com.michelet.restaurant.domain.model.RestaurantStatus;
 import com.michelet.restaurant.presentation.dto.CreateRestaurantRequest;
 import com.michelet.restaurant.presentation.dto.CreateRestaurantResponse;
 import com.michelet.restaurant.presentation.dto.GetRestaurantResponse;
+import com.michelet.restaurant.presentation.dto.RestaurantSummaryResponse;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -60,5 +66,26 @@ public class RestaurantController {
         GetRestaurantResult result = restaurantQueryService.getRestaurant(restaurantId);
 
         return ApiResponse.ok(GetRestaurantResponse.from(result));
+    }
+
+    /**
+     * 외부 식당 목록/검색 조회 API
+     *
+     * name, status 조건으로 식당 목록을 검색
+     * 페이징 정보는 Pageable을 사용
+     */
+    @GetMapping
+    public ApiResponse<Page<RestaurantSummaryResponse>> getRestaurants(@RequestParam(required = false) String name,
+                                                                       @RequestParam(required = false) RestaurantStatus status,
+                                                                       Pageable pageable) {
+
+        RestaurantSearchCondition condition = new RestaurantSearchCondition(name, status);
+
+        Page<RestaurantSummaryResult> resultPage = restaurantQueryService.getRestaurants(condition, pageable);
+
+        Page<RestaurantSummaryResponse> responsePage =
+                resultPage.map(result -> RestaurantSummaryResponse.from(result));
+
+        return ApiResponse.ok(responsePage);
     }
 }
