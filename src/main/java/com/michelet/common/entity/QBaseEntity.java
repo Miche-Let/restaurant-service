@@ -14,9 +14,9 @@ import static com.querydsl.core.types.PathMetadataFactory.forVariable;
  * common 모듈의 BaseEntity에 대한 QueryDSL 타입
  *
  * 현재 common 모듈에서 QBaseEntity가 함께 제공되지 않아
- * restaurant-service에서 QueryDSL 컴파일 시 직접 보완한다.
+ * restaurant-service에서 QueryDSL 컴파일 시 직접 보완
  *
- * 추후 common 모듈에서 QueryDSL 생성물이 함께 배포되면 제거 가능하다.
+ * 추후 common 모듈에서 QueryDSL 생성물이 함께 배포되면 제거
  */
 public class QBaseEntity extends EntityPathBase<BaseEntity> {
 
