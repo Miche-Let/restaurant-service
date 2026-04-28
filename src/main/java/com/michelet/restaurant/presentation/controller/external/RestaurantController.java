@@ -57,7 +57,7 @@ public class RestaurantController {
     }
 
     /**
-     * 외부 식당 상세 조회 API
+     * 식당 상세 조회 API
      *
      * 사용자가 식당 상세 정보를 조회할 때 사용하는 외부 API
      * ownerId 같은 내부 식별 정보는 응답에 포함x
@@ -76,10 +76,10 @@ public class RestaurantController {
      * name, status 조건으로 식당 목록을 검색
      * Pageable 기본값은 createdAt desc, size 10으로 설정
      */
-    @GetMapping("/api/v1/restaurants")
+    @GetMapping
     public ApiResponse<Page<RestaurantSummaryResponse>> getRestaurants(@RequestParam(required = false) String name,
                                                                        @RequestParam(required = false) RestaurantStatus status,
-                                                                       @PageableDefault(size = 10, sort = "createAt", direction = Sort.Direction.DESC) Pageable pageable) {
+                                                                       @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
         RestaurantSearchCondition condition = new RestaurantSearchCondition(name, status);
 
