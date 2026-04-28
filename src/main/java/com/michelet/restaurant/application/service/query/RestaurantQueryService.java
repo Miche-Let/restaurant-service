@@ -1,10 +1,15 @@
 package com.michelet.restaurant.application.service.query;
 
+import com.michelet.restaurant.application.query.RestaurantSearchCondition;
+import com.michelet.restaurant.application.query.repository.RestaurantQueryRepository;
 import com.michelet.restaurant.application.result.GetRestaurantResult;
+import com.michelet.restaurant.application.result.RestaurantSummaryResult;
 import com.michelet.restaurant.domain.exception.RestaurantErrorCode;
 import com.michelet.restaurant.domain.exception.RestaurantException;
 import com.michelet.restaurant.domain.model.Restaurant;
 import com.michelet.restaurant.domain.repository.RestaurantRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,9 +20,11 @@ import java.util.UUID;
 public class RestaurantQueryService {
 
     private final RestaurantRepository restaurantRepository;
+    private final RestaurantQueryRepository restaurantQueryRepository;
 
-    public RestaurantQueryService(RestaurantRepository restaurantRepository) {
+    public RestaurantQueryService(RestaurantRepository restaurantRepository, RestaurantQueryRepository restaurantQueryRepository) {
         this.restaurantRepository = restaurantRepository;
+        this.restaurantQueryRepository = restaurantQueryRepository;
     }
 
     /**
@@ -31,5 +38,16 @@ public class RestaurantQueryService {
                 .orElseThrow(() -> new RestaurantException(RestaurantErrorCode.RESTAURANT_404_NOT_FOUND));
 
         return GetRestaurantResult.from(restaurant);
+    }
+
+    /**
+     * 식당 목록/검색 결과를 페이지 단위로 조회
+     *
+     * QueryDSL 기반 Query Repository에 검색 조건과 Pageable을 전달해
+     * 목록 조회 및 검색 조회를 공통 처리
+     */
+    public Page<RestaurantSummaryResult> getRestaurants(RestaurantSearchCondition condition, Pageable pageable) {
+
+        return restaurantQueryRepository.search(condition, pageable);
     }
 }
