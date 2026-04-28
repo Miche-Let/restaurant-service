@@ -16,6 +16,8 @@ import com.michelet.restaurant.presentation.dto.RestaurantSummaryResponse;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -69,15 +71,15 @@ public class RestaurantController {
     }
 
     /**
-     * 외부 식당 목록/검색 조회 API
-     *
+     * 식당 목록/검색 조회 API
+     * <p>
      * name, status 조건으로 식당 목록을 검색
-     * 페이징 정보는 Pageable을 사용
+     * Pageable 기본값은 createdAt desc, size 10으로 설정
      */
-    @GetMapping
+    @GetMapping("/api/v1/restaurants")
     public ApiResponse<Page<RestaurantSummaryResponse>> getRestaurants(@RequestParam(required = false) String name,
                                                                        @RequestParam(required = false) RestaurantStatus status,
-                                                                       Pageable pageable) {
+                                                                       @PageableDefault(size = 10, sort = "createAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
         RestaurantSearchCondition condition = new RestaurantSearchCondition(name, status);
 
