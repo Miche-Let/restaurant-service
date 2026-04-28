@@ -4,12 +4,16 @@ import com.michelet.restaurant.application.query.RestaurantSearchCondition;
 import com.michelet.restaurant.application.query.repository.RestaurantQueryRepository;
 import com.michelet.restaurant.application.result.RestaurantSummaryResult;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.michelet.restaurant.domain.model.QRestaurant.restaurant;
@@ -47,10 +51,10 @@ public class RestaurantQueryRepositoryImpl implements RestaurantQueryRepository 
                 .where(predicate)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
-                .orderBy(restaurant.createdAt.desc())
+                .orderBy(getOrderSpecifiers(pageable))
                 .fetch()
                 .stream()
-                .map(restaurant -> RestaurantSummaryResult.from(restaurant))
+                .map(RestaurantSummaryResult::from)
                 .toList();
 
         Long total = jpaQueryFactory
@@ -63,6 +67,7 @@ public class RestaurantQueryRepositoryImpl implements RestaurantQueryRepository 
     }
 
     // 검색 조건을 QueryDSL predicate로 조합
+
     private BooleanBuilder buildPredicate(RestaurantSearchCondition condition) {
         BooleanBuilder builder = new BooleanBuilder();
 
@@ -80,4 +85,34 @@ public class RestaurantQueryRepositoryImpl implements RestaurantQueryRepository 
 
         return builder;
     }
+
+    /**
+     * Pageable의 Sort 정보를 QueryDSL OrderSpecifier로 변환
+     *
+     * 허용하지 않은 정렬 필드는 무시
+     * 최종적으로 유효한 정렬 조건이 하나도 없으면 createdAt desc를 기본 정렬로 사용
+     */
+    private OrderSpecifier<?>[] getOrderSpecifiers(Pageable pageable) {
+        List<OrderSpecifier<?>> orderSpecifiers = new ArrayList<>();
+
+        for (Sort.Order sortOrder : pageable.getSort()) {
+            Order direction = sortOrder.isAscending() ? Order.ASC : Order.DESC;
+
+            switch (sortOrder.getProperty()) {
+                case "createAt" -> orderSpecifiers.add(new OrderSpecifier<>(direction, restaurant.createdAt));
+                case "name" -> orderSpecifiers.add(new OrderSpecifier<>(direction, restaurant.name));
+                case "status" -> orderSpecifiers.add(new OrderSpecifier<>(direction, restaurant.status));
+                default -> {
+                    // 허용하지 않은 정렬 필드는 아무 작업도 하지 않음
+                }
+            }
+        }
+
+        if (orderSpecifiers.isEmpty()) {
+            return new OrderSpecifier[]{restaurant.createdAt.desc()};
+        }
+
+        return orderSpecifiers.toArray(new OrderSpecifier[0]);
+    }
+
 }
