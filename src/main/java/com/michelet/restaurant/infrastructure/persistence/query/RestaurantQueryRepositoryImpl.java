@@ -22,7 +22,7 @@ import static com.michelet.restaurant.domain.model.QRestaurant.restaurant;
  * 식당 목록/검색 조회용 QueryDSL 구현체
  *
  * application 계층의 RestaurantQueryRepository를 QueryDSL 기반으로 구현
- * MVP 단계에서는 이름(name), 상태(status) 조건만 지원
+ * 검색 조건은 keyword, region, status
  */
 @Repository
 public class RestaurantQueryRepositoryImpl implements RestaurantQueryRepository {
@@ -33,15 +33,7 @@ public class RestaurantQueryRepositoryImpl implements RestaurantQueryRepository 
         this.jpaQueryFactory = jpaQueryFactory;
     }
 
-    /**
-     * 식당 목록/검색 결과를 페이지 단위로 조회
-     *
-     * 지원 조건
-     * - name: 식당 이름 포함 검색
-     * - status: 식당 상태 일치 검색
-     *
-     * 페이징은 Pageable의 offset, pageSize를 사용
-     */
+    // 식당 목록/검색 결과를 페이지 단위로 조회
     @Override
     public Page<RestaurantSummaryResult> search(RestaurantSearchCondition condition, Pageable pageable) {
         BooleanBuilder predicate = buildPredicate(condition);
@@ -54,7 +46,7 @@ public class RestaurantQueryRepositoryImpl implements RestaurantQueryRepository 
                 .orderBy(getOrderSpecifiers(pageable))
                 .fetch()
                 .stream()
-                .map(RestaurantSummaryResult::from)
+                .map(entity -> RestaurantSummaryResult.from(entity))
                 .toList();
 
         Long total = jpaQueryFactory
@@ -66,17 +58,22 @@ public class RestaurantQueryRepositoryImpl implements RestaurantQueryRepository 
         return new PageImpl<>(content, pageable, total != null ? total : 0L);
     }
 
-    // 검색 조건을 QueryDSL predicate로 조합
-
     private BooleanBuilder buildPredicate(RestaurantSearchCondition condition) {
         BooleanBuilder builder = new BooleanBuilder();
+
+        // soft delete 된 식당은 목록/검색 조회에서 제외한다.
+        builder.and(restaurant.deletedAt.isNull());
 
         if (condition == null) {
             return builder;
         }
 
-        if (condition.hasName()) {
-            builder.and(restaurant.name.containsIgnoreCase(condition.name().trim()));
+        if (condition.hasKeyword()) {
+            builder.and(restaurant.name.containsIgnoreCase(condition.keyword().trim()));
+        }
+
+        if (condition.hasRegion()) {
+            builder.and(restaurant.address.containsIgnoreCase(condition.region().trim()));
         }
 
         if (condition.hasStatus()) {
@@ -86,12 +83,7 @@ public class RestaurantQueryRepositoryImpl implements RestaurantQueryRepository 
         return builder;
     }
 
-    /**
-     * Pageable의 Sort 정보를 QueryDSL OrderSpecifier로 변환
-     *
-     * 허용하지 않은 정렬 필드는 무시
-     * 최종적으로 유효한 정렬 조건이 하나도 없으면 createdAt desc를 기본 정렬로 사용
-     */
+    // Pageable의 Sort 정보를 QueryDSL OrderSpecifier로 변환
     private OrderSpecifier<?>[] getOrderSpecifiers(Pageable pageable) {
         List<OrderSpecifier<?>> orderSpecifiers = new ArrayList<>();
 
@@ -103,7 +95,7 @@ public class RestaurantQueryRepositoryImpl implements RestaurantQueryRepository 
                 case "name" -> orderSpecifiers.add(new OrderSpecifier<>(direction, restaurant.name));
                 case "status" -> orderSpecifiers.add(new OrderSpecifier<>(direction, restaurant.status));
                 default -> {
-                    // 허용하지 않은 정렬 필드는 아무 작업도 하지 않음
+                    // 허용하지 않은 정렬 필드는 무시
                 }
             }
         }
@@ -114,5 +106,4 @@ public class RestaurantQueryRepositoryImpl implements RestaurantQueryRepository 
 
         return orderSpecifiers.toArray(new OrderSpecifier[0]);
     }
-
 }
