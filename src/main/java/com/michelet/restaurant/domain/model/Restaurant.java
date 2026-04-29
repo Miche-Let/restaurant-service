@@ -1,28 +1,32 @@
 package com.michelet.restaurant.domain.model;
 
 import com.michelet.common.entity.BaseEntity;
-import com.michelet.restaurant.domain.model.vo.*;
-import jakarta.persistence.*;
+import com.michelet.restaurant.domain.model.vo.BusinessHours;
+import com.michelet.restaurant.domain.model.vo.ReservationOpenAt;
+import com.michelet.restaurant.domain.model.vo.RestaurantAddress;
+import com.michelet.restaurant.domain.model.vo.RestaurantName;
+import com.michelet.restaurant.domain.model.vo.RestaurantPhone;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
+import java.time.LocalTime;
+import java.util.UUID;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalTime;
-import java.util.Objects;
-import java.util.UUID;
 
 @Getter
 @Entity
 @Table(
         name = "p_restaurant",
         indexes = {
-                // owner 기준 식당 조회가 있을 수 있으므로 인덱스 추가
                 @Index(name = "idx_restaurant_owner_id", columnList = "owner_id"),
-
                 // 상태별 조회/필터링 대비
                 @Index(name = "idx_restaurant_status", columnList = "status"),
-
                 // 식당 이름 검색/조회 대비
                 @Index(name = "idx_restaurant_name", columnList = "name")
         }
@@ -31,7 +35,6 @@ import java.util.UUID;
 public class Restaurant extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "restaurant_id", nullable = false, updatable = false)
     private UUID restaurantId;
 
@@ -63,7 +66,6 @@ public class Restaurant extends BaseEntity {
     @Column(name = "business_hours", nullable = false, columnDefinition = "text")
     private String businessHours;
 
-    @Builder(access = AccessLevel.PRIVATE)
     private Restaurant(
             UUID ownerId,
             String name,
@@ -75,14 +77,15 @@ public class Restaurant extends BaseEntity {
             RestaurantStatus status,
             String businessHours
     ) {
-        this.ownerId = Objects.requireNonNull(ownerId, "ownerId must not be null");
+        this.restaurantId = UUID.randomUUID();
+        this.ownerId = validateOwnerId(ownerId);
         this.name = RestaurantName.of(name).value();
         this.address = RestaurantAddress.of(address).value();
         this.phone = RestaurantPhone.of(phone).value();
         this.description = normalizeDescription(description);
         this.reservationOpenAt = ReservationOpenAt.of(reservationOpenAt).value();
         this.avgMealDurationMin = validateAvgMealDuration(avgMealDurationMin);
-        this.status = Objects.requireNonNull(status, "status must not be null");
+        this.status = validateStatus(status);
         this.businessHours = BusinessHours.of(businessHours).value();
     }
 
@@ -97,19 +100,18 @@ public class Restaurant extends BaseEntity {
             RestaurantStatus status,
             String businessHours
     ) {
-        return Restaurant.builder()
-                .ownerId(ownerId)
-                .name(name)
-                .address(address)
-                .phone(phone)
-                .description(description)
-                .reservationOpenAt(reservationOpenAt)
-                .avgMealDurationMin(avgMealDurationMin)
-                .status(status)
-                .businessHours(businessHours)
-                .build();
+        return new Restaurant(
+                ownerId,
+                name,
+                address,
+                phone,
+                description,
+                reservationOpenAt,
+                avgMealDurationMin,
+                status,
+                businessHours
+        );
     }
-
 
     public void updateBasicInfo(
             String name,
@@ -127,14 +129,17 @@ public class Restaurant extends BaseEntity {
         this.description = normalizeDescription(description);
         this.reservationOpenAt = ReservationOpenAt.of(reservationOpenAt).value();
         this.avgMealDurationMin = validateAvgMealDuration(avgMealDurationMin);
-        this.status = Objects.requireNonNull(status, "status must not be null");
+        this.status = validateStatus(status);
         this.businessHours = BusinessHours.of(businessHours).value();
     }
 
-    /**
-     * 평균 식사 시간 검증
-     * 0 이하 값은 비정상 데이터로 간주한다.
-     */
+    private UUID validateOwnerId(UUID ownerId) {
+        if (ownerId == null) {
+            throw new IllegalArgumentException("오너 ID는 필수입니다.");
+        }
+        return ownerId;
+    }
+
     private Integer validateAvgMealDuration(Integer avgMealDurationMin) {
         if (avgMealDurationMin == null || avgMealDurationMin <= 0) {
             throw new IllegalArgumentException("평균 식사 시간은 1분 이상이어야 합니다.");
@@ -142,10 +147,13 @@ public class Restaurant extends BaseEntity {
         return avgMealDurationMin;
     }
 
-    /**
-     * description은 null 허용.
-     * 공백만 들어온 경우는 null로 정규화한다.
-     */
+    private RestaurantStatus validateStatus(RestaurantStatus status) {
+        if (status == null) {
+            throw new IllegalArgumentException("식당 상태는 필수입니다.");
+        }
+        return status;
+    }
+
     private String normalizeDescription(String description) {
         if (description == null) {
             return null;
