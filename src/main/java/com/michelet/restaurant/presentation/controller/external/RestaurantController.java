@@ -76,13 +76,12 @@ public class RestaurantController {
      */
     @GetMapping
     public ApiResponse<Page<RestaurantSummaryResponse>> getRestaurants(@RequestParam(required = false) String keyword,
-                                                                       @RequestParam(required = false) String region,
+                                                                       @RequestParam(required = false) String address,
                                                                        @RequestParam(required = false) RestaurantStatus status,
                                                                        @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        // region은 별도 컬럼이 없으므로 QueryDSL 단계에서 address 포함 검색으로 처리
         RestaurantSearchCondition condition = new RestaurantSearchCondition(
                 keyword,
-                region,
+                address,
                 status
         );
 

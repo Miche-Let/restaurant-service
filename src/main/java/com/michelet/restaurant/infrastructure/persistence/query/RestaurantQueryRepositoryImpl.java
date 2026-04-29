@@ -72,8 +72,8 @@ public class RestaurantQueryRepositoryImpl implements RestaurantQueryRepository 
             builder.and(restaurant.name.containsIgnoreCase(condition.keyword().trim()));
         }
 
-        if (condition.hasRegion()) {
-            builder.and(restaurant.address.containsIgnoreCase(condition.region().trim()));
+        if (condition.hasAddress()) {
+            builder.and(restaurant.address.containsIgnoreCase(condition.address().trim()));
         }
 
         if (condition.hasStatus()) {
