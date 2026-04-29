@@ -29,7 +29,7 @@ public record CreateCourseRequest(
         // 클라이언트는 menuComposition을 직접 보내지 않고, 서버가 menus를 기반으로 생성
         @Valid
         @NotEmpty(message = "코스 메뉴는 1개 이상 필요합니다.")
-        List<CreateCourseRequest> menus
+        List<CreateCourseMenuRequest> menus
 
 ) {
 }
