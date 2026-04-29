@@ -48,7 +48,11 @@ class RestaurantQueryRepositoryImplTest {
                 생성("Another Restaurant", RestaurantStatus.OPEN)
         );
 
-        RestaurantSearchCondition condition = new RestaurantSearchCondition(null, null);
+        RestaurantSearchCondition condition = new RestaurantSearchCondition(
+                null,
+                null,
+                null
+        );
         PageRequest pageable = PageRequest.of(0, 10);
 
         Page<RestaurantSummaryResult> result =
@@ -77,7 +81,11 @@ class RestaurantQueryRepositoryImplTest {
         );
 
         RestaurantSearchCondition condition =
-                new RestaurantSearchCondition("MicheLet", RestaurantStatus.OPEN);
+                new RestaurantSearchCondition(
+                        "MicheLet",
+                        null,
+                        RestaurantStatus.OPEN
+                );
         PageRequest pageable = PageRequest.of(0, 1);
 
         Page<RestaurantSummaryResult> result =
