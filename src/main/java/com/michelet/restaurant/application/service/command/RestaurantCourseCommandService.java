@@ -81,8 +81,18 @@ public class RestaurantCourseCommandService {
             throw new CourseException(CourseErrorCode.COURSE_400_INVALID_REQUEST);
         }
 
+        validateNullMenu(menus);
         validateDuplicatedSortOrder(menus);
     }
+
+    private void validateNullMenu(List<CreateCourseMenuCommand> menus) {
+        for (CreateCourseMenuCommand menu : menus) {
+            if (menu == null) {
+                throw new CourseException(CourseErrorCode.COURSE_400_INVALID_REQUEST);
+            }
+        }
+    }
+
 
     private void validateDuplicatedSortOrder(List<CreateCourseMenuCommand> menus) {
         // 중복 허용 방지

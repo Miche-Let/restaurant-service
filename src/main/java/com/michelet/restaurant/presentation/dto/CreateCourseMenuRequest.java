@@ -2,6 +2,7 @@ package com.michelet.restaurant.presentation.dto;
 
 import com.michelet.restaurant.domain.model.CoursePart;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
@@ -12,7 +13,8 @@ public record CreateCourseMenuRequest(
         CoursePart coursePart,
 
         // 사용자에게 노출될 개별 메뉴명
-        @NotNull(message = "메뉴명은 필수입니다.")
+        // null, 빈 문자열, 공백 문자열방지
+        @NotBlank(message = "메뉴명은 필수입니다.")
         @Size(max = 100, message = "메뉴명은 100자를 초과할 수 없습니다.")
         String menuName,
 

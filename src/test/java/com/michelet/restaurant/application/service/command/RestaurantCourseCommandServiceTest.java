@@ -25,6 +25,7 @@ import com.michelet.restaurant.domain.repository.RestaurantCourseMenuRepository;
 import com.michelet.restaurant.domain.repository.RestaurantCourseRepository;
 import com.michelet.restaurant.domain.repository.RestaurantRepository;
 import java.time.LocalTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -195,6 +196,37 @@ class RestaurantCourseCommandServiceTest {
         then(restaurantCourseRepository).should(never()).save(any(RestaurantCourse.class));
         then(restaurantCourseMenuRepository).should(never()).saveAll(anyList());
     }
+
+    @Test
+    @DisplayName("코스 메뉴 항목이 null이면 예외 발생")
+    void 코스메뉴항목이null이면_예외발생() {
+        UUID restaurantId = UUID.randomUUID();
+        Restaurant restaurant = createRestaurant();
+
+        CreateCourseCommand command = new CreateCourseCommand(
+                restaurantId,
+                "Dinner Course",
+                150000L,
+                CourseSessionType.DINNER,
+                CourseStatus.AVAILABLE,
+                Collections.singletonList(null)
+        );
+
+        given(restaurantRepository.findById(restaurantId))
+                .willReturn(Optional.of(restaurant));
+
+        CourseException exception = assertThrows(
+                CourseException.class,
+                () -> restaurantCourseCommandService.createCourse(command)
+        );
+
+        assertThat(exception.getErrorCode())
+                .isEqualTo(CourseErrorCode.COURSE_400_INVALID_REQUEST.getCode());
+
+        then(restaurantCourseRepository).should(never()).save(any(RestaurantCourse.class));
+        then(restaurantCourseMenuRepository).should(never()).saveAll(anyList());
+    }
+
 
     private Restaurant createRestaurant() {
         return Restaurant.create(
