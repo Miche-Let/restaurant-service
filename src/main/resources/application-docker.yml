@@ -27,5 +27,6 @@ spring:
 
 eureka:
   client:
+    enabled: ${EUREKA_CLIENT_ENABLED:true}
     service-url:
       defaultZone: ${EUREKA_DEFAULT_ZONE:http://eureka-server:8761/eureka/}
