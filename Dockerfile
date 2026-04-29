@@ -1,17 +1,24 @@
-# build stage
 FROM gradle:8.14.3-jdk17 AS builder
 WORKDIR /app
 
-COPY . .
+COPY build.gradle settings.gradle ./
 
-RUN gradle clean bootJar --no-daemon
+COPY gradlew ./
+COPY gradle ./gradle
 
-# runtime stage
+COPY src ./src
+
+RUN chmod +x ./gradlew
+RUN ./gradlew clean bootJar --no-daemon
+
+
 FROM eclipse-temurin:17-jre
 WORKDIR /app
+
+ENV SPRING_PROFILES_ACTIVE=docker
 
 COPY --from=builder /app/build/libs/*.jar app.jar
 
 EXPOSE 19300
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
