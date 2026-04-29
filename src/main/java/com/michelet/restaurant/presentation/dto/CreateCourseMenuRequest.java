@@ -16,7 +16,7 @@ public record CreateCourseMenuRequest(
         @Size(max = 100, message = "메뉴명은 100자를 초과할 수 없습니다.")
         String menuName,
 
-        // 한 코스 안에서 메뉴가 노출되는 순서다.
+        // 한 코스 안에서 메뉴가 노출되는 순서
         // 서버는 이 값을 기준으로 menuComposition을 생성
         @NotNull(message = "정렬 순서는 필수입니다.")
         @Min(value = 1, message = "정렬 순서는 1 이상이어야 합니다.")
