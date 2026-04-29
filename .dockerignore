@@ -7,3 +7,6 @@ out
 *.iml
 *.log
 src/docs
+.env
+.env.local
+.env.*.local
