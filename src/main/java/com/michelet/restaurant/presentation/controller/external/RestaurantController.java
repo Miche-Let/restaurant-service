@@ -72,18 +72,24 @@ public class RestaurantController {
 
     /**
      * 식당 목록/검색 조회 API
-     * <p>
-     * name, status 조건으로 식당 목록을 검색
      * Pageable 기본값은 createdAt desc, size 10으로 설정
      */
     @GetMapping
-    public ApiResponse<Page<RestaurantSummaryResponse>> getRestaurants(@RequestParam(required = false) String name,
+    public ApiResponse<Page<RestaurantSummaryResponse>> getRestaurants(@RequestParam(required = false) String keyword,
+                                                                       @RequestParam(required = false) String region,
                                                                        @RequestParam(required = false) RestaurantStatus status,
                                                                        @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        // region은 별도 컬럼이 없으므로 QueryDSL 단계에서 address 포함 검색으로 처리
+        RestaurantSearchCondition condition = new RestaurantSearchCondition(
+                keyword,
+                region,
+                status
+        );
 
-        RestaurantSearchCondition condition = new RestaurantSearchCondition(name, status);
-
-        Page<RestaurantSummaryResult> resultPage = restaurantQueryService.getRestaurants(condition, pageable);
+        Page<RestaurantSummaryResult> resultPage = restaurantQueryService.getRestaurants(
+                condition,
+                pageable
+        );
 
         Page<RestaurantSummaryResponse> responsePage =
                 resultPage.map(result -> RestaurantSummaryResponse.from(result));
