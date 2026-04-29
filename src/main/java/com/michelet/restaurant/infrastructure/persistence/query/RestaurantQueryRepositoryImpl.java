@@ -61,7 +61,7 @@ public class RestaurantQueryRepositoryImpl implements RestaurantQueryRepository 
     private BooleanBuilder buildPredicate(RestaurantSearchCondition condition) {
         BooleanBuilder builder = new BooleanBuilder();
 
-        // soft delete 된 식당은 목록/검색 조회에서 제외한다.
+        // soft delete 된 식당은 목록/검색 조회에서 제외
         builder.and(restaurant.deletedAt.isNull());
 
         if (condition == null) {
