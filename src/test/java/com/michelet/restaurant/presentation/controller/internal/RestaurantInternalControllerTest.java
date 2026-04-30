@@ -12,6 +12,7 @@ import com.michelet.restaurant.domain.exception.RestaurantErrorCode;
 import com.michelet.restaurant.domain.exception.RestaurantException;
 import com.michelet.restaurant.domain.model.RestaurantStatus;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -53,7 +54,8 @@ class RestaurantInternalControllerTest {
                         LocalTime.of(10, 0),
                         90,
                         RestaurantStatus.OPEN,
-                        "MON-FRI 11:00-20:00 / SAT,SUN CLOSED"
+                        "MON-FRI 11:00-20:00 / SAT,SUN CLOSED",
+                        List.of()
                 ));
 
         mockMvc.perform(get("/internal/v1/restaurants/{restaurantId}", restaurantId))

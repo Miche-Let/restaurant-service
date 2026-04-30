@@ -9,16 +9,23 @@ import com.michelet.restaurant.domain.model.RestaurantStatus;
  * 페이징 정보는 Pageable로 별도 전달하므로 이 객체에는 검색 조건만 포함
  */
 public record RestaurantSearchCondition(
-        String name,
+        String keyword,
+        String region,
         RestaurantStatus status
 ) {
 
-    // 식당 이름 검색어가 존재하는지 여부를 반환
-    public boolean hasName() {
-        return name != null && !name.isBlank();
+    // 식당명 검색어가 존재하는지 확인
+    public boolean hasKeyword() {
+        return keyword != null && !keyword.isBlank();
     }
 
-    // 식당 상태 조건이 존재하는지 여부를 반환
+    // 지역 검색어가 존재하는지 확인
+    // MVP에서는 별도 region 컬럼이 없으므로 address 검색 조건으로 사용
+    public boolean hasRegion() {
+        return region != null && !region.isBlank();
+    }
+
+    // 식당 상태 조건이 존재하는지 확인
     public boolean hasStatus() {
         return status != null;
     }

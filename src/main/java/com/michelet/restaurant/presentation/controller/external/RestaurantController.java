@@ -9,10 +9,7 @@ import com.michelet.restaurant.application.result.RestaurantSummaryResult;
 import com.michelet.restaurant.application.service.command.RestaurantCommandService;
 import com.michelet.restaurant.application.service.query.RestaurantQueryService;
 import com.michelet.restaurant.domain.model.RestaurantStatus;
-import com.michelet.restaurant.presentation.dto.CreateRestaurantRequest;
-import com.michelet.restaurant.presentation.dto.CreateRestaurantResponse;
-import com.michelet.restaurant.presentation.dto.GetRestaurantResponse;
-import com.michelet.restaurant.presentation.dto.RestaurantSummaryResponse;
+import com.michelet.restaurant.presentation.dto.*;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -72,22 +69,28 @@ public class RestaurantController {
 
     /**
      * 식당 목록/검색 조회 API
-     * <p>
-     * name, status 조건으로 식당 목록을 검색
      * Pageable 기본값은 createdAt desc, size 10으로 설정
      */
     @GetMapping
-    public ApiResponse<Page<RestaurantSummaryResponse>> getRestaurants(@RequestParam(required = false) String name,
-                                                                       @RequestParam(required = false) RestaurantStatus status,
-                                                                       @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+    public ApiResponse<PageResponse<RestaurantSummaryResponse>> getRestaurants(@RequestParam(required = false) String keyword,
+                                                                               @RequestParam(required = false) String region,
+                                                                               @RequestParam(required = false) RestaurantStatus status,
+                                                                               @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
-        RestaurantSearchCondition condition = new RestaurantSearchCondition(name, status);
+        RestaurantSearchCondition condition = new RestaurantSearchCondition(
+                keyword,
+                region,
+                status
+        );
 
-        Page<RestaurantSummaryResult> resultPage = restaurantQueryService.getRestaurants(condition, pageable);
+        Page<RestaurantSummaryResult> resultPage = restaurantQueryService.getRestaurants(
+                condition,
+                pageable
+        );
 
         Page<RestaurantSummaryResponse> responsePage =
                 resultPage.map(result -> RestaurantSummaryResponse.from(result));
 
-        return ApiResponse.ok(responsePage);
+        return ApiResponse.ok(PageResponse.from(responsePage));
     }
 }
