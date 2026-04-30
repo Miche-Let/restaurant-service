@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.michelet.common.exception.GlobalExceptionHandler;
 import com.michelet.restaurant.application.query.RestaurantSearchCondition;
+import com.michelet.restaurant.application.result.CourseSummaryResult;
 import com.michelet.restaurant.application.result.CreateRestaurantResult;
 import com.michelet.restaurant.application.result.GetRestaurantResult;
 import com.michelet.restaurant.application.result.RestaurantSummaryResult;
@@ -16,6 +17,8 @@ import com.michelet.restaurant.application.service.command.RestaurantCommandServ
 import com.michelet.restaurant.application.service.query.RestaurantQueryService;
 import com.michelet.restaurant.domain.exception.RestaurantErrorCode;
 import com.michelet.restaurant.domain.exception.RestaurantException;
+import com.michelet.restaurant.domain.model.CourseSessionType;
+import com.michelet.restaurant.domain.model.CourseStatus;
 import com.michelet.restaurant.domain.model.RestaurantStatus;
 import java.time.LocalTime;
 import java.util.List;
@@ -85,6 +88,7 @@ class RestaurantControllerTest {
     @DisplayName("식당 상세 조회")
     void 식당상세조회() throws Exception {
         UUID restaurantId = UUID.randomUUID();
+        UUID courseId = UUID.randomUUID();
 
         given(restaurantQueryService.getRestaurant(restaurantId))
                 .willReturn(new GetRestaurantResult(
@@ -98,7 +102,16 @@ class RestaurantControllerTest {
                         90,
                         RestaurantStatus.OPEN,
                         "MON-FRI 11:00-20:00 / SAT,SUN CLOSED",
-                        List.of()
+                        List.of(
+                                new CourseSummaryResult(
+                                        courseId,
+                                        "Dinner Course",
+                                        150000L,
+                                        "애피타이저: 제철 샐러드 / 메인: 양갈비 / 디저트: 바닐라 무스",
+                                        CourseSessionType.DINNER,
+                                        CourseStatus.AVAILABLE
+                                )
+                        )
                 ));
 
         mockMvc.perform(get("/api/v1/restaurants/{restaurantId}", restaurantId))
@@ -112,7 +125,15 @@ class RestaurantControllerTest {
                 .andExpect(jsonPath("$.data.reservationOpenAt").value("10:00:00"))
                 .andExpect(jsonPath("$.data.avgMealDurationMin").value(90))
                 .andExpect(jsonPath("$.data.status").value("OPEN"))
-                .andExpect(jsonPath("$.data.businessHours").value("MON-FRI 11:00-20:00 / SAT,SUN CLOSED"));
+                .andExpect(jsonPath("$.data.businessHours").value("MON-FRI 11:00-20:00 / SAT,SUN CLOSED"))
+                .andExpect(jsonPath("$.data.courses.length()").value(1))
+                .andExpect(jsonPath("$.data.courses[0].courseId").value(courseId.toString()))
+                .andExpect(jsonPath("$.data.courses[0].name").value("Dinner Course"))
+                .andExpect(jsonPath("$.data.courses[0].price").value(150000))
+                .andExpect(jsonPath("$.data.courses[0].menuComposition")
+                        .value("애피타이저: 제철 샐러드 / 메인: 양갈비 / 디저트: 바닐라 무스"))
+                .andExpect(jsonPath("$.data.courses[0].sessionType").value("DINNER"))
+                .andExpect(jsonPath("$.data.courses[0].status").value("AVAILABLE"));
     }
 
     @Test
