@@ -60,7 +60,7 @@ public class RestaurantController {
      * 사용자가 식당 상세 정보를 조회할 때 사용하는 외부 API
      * ownerId 같은 내부 식별 정보는 응답에 포함x
      */
-    @RequireRole({UserRole.USER, UserRole.MASTER})
+    @RequireRole({UserRole.USER, UserRole.OWNER, UserRole.MASTER})
     @GetMapping("/{restaurantId}")
     public ApiResponse<GetRestaurantResponse> getRestaurant(@PathVariable UUID restaurantId) {
 
@@ -73,7 +73,7 @@ public class RestaurantController {
      * 식당 목록/검색 조회 API
      * Pageable 기본값은 createdAt desc, size 10으로 설정
      */
-    @RequireRole({UserRole.USER, UserRole.OWNER})
+    @RequireRole({UserRole.USER, UserRole.OWNER, UserRole.MASTER})
     @GetMapping
     public ApiResponse<PageResponse<RestaurantSummaryResponse>> getRestaurants(@RequestParam(required = false) String keyword,
                                                                                @RequestParam(required = false) String region,
