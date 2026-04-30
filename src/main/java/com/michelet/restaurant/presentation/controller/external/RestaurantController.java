@@ -11,6 +11,8 @@ import com.michelet.restaurant.application.result.GetRestaurantResult;
 import com.michelet.restaurant.application.result.RestaurantSummaryResult;
 import com.michelet.restaurant.application.service.command.RestaurantCommandService;
 import com.michelet.restaurant.application.service.query.RestaurantQueryService;
+import com.michelet.restaurant.domain.exception.RestaurantErrorCode;
+import com.michelet.restaurant.domain.exception.RestaurantException;
 import com.michelet.restaurant.domain.model.RestaurantStatus;
 import com.michelet.restaurant.presentation.dto.*;
 import jakarta.validation.Valid;
@@ -42,7 +44,7 @@ public class RestaurantController {
     @PostMapping
     public ApiResponse<CreateRestaurantResponse> createRestaurant(@Valid @RequestBody CreateRestaurantRequest request) {
 
-        UUID ownerId = UUID.fromString(UserContextHolder.get().userId());
+        UUID ownerId = getAuthenticatedUserId();
 
         CreateRestaurantCommand command = CreateRestaurantCommand.of(ownerId, request);
         CreateRestaurantResult result = restaurantCommandService.createRestaurant(command);
@@ -95,5 +97,15 @@ public class RestaurantController {
                 resultPage.map(result -> RestaurantSummaryResponse.from(result));
 
         return ApiResponse.ok(PageResponse.from(responsePage));
+    }
+
+    private UUID getAuthenticatedUserId() {
+        String userId = UserContextHolder.get().userId();
+
+        try {
+            return UUID.fromString(userId);
+        } catch (IllegalArgumentException exception) {
+            throw new RestaurantException(RestaurantErrorCode.RESTAURANT_401_INVALID_AUTH_USER_ID);
+        }
     }
 }
