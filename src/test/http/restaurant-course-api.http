@@ -75,3 +75,13 @@ GET {{baseUrl}}/api/v1/restaurants/{{restaurantId}}/courses
 
 ### 4. 존재하지 않는 식당의 코스 목록 조회 - 404 확인
 GET {{baseUrl}}/api/v1/restaurants/00000000-0000-0000-0000-000000000000/courses
+
+
+### 5. 내부 코스 목록 조회
+GET {{baseUrl}}/internal/v1/restaurants/{{restaurantId}}/courses
+X-Internal-Request: true
+
+
+### 6. 존재하지 않는 식당의 내부 코스 목록 조회 - 404 확인
+GET {{baseUrl}}/internal/v1/restaurants/00000000-0000-0000-0000-000000000000/courses
+X-Internal-Request: true
