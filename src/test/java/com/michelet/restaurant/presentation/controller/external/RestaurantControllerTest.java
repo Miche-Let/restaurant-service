@@ -97,7 +97,8 @@ class RestaurantControllerTest {
                         LocalTime.of(10, 0),
                         90,
                         RestaurantStatus.OPEN,
-                        "MON-FRI 11:00-20:00 / SAT,SUN CLOSED"
+                        "MON-FRI 11:00-20:00 / SAT,SUN CLOSED",
+                        List.of()
                 ));
 
         mockMvc.perform(get("/api/v1/restaurants/{restaurantId}", restaurantId))
