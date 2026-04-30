@@ -60,6 +60,7 @@ Content-Type: application/json
 
 
 ### 0-1. OWNER 로그인
+### 식당 등록 / 코스 등록에 사용할 OWNER 토큰 발급
 POST {{authUrl}}/api/v1/auth/login
 Content-Type: application/json
 
@@ -106,21 +107,28 @@ Content-Type: application/json
 }
 
 > {%
+    client.global.clear("userToken");
+
     client.log("USER 로그인 응답");
     client.log(JSON.stringify(response.body, null, 2));
 
-    if (response.status === 200) {
-        if (response.body.data && response.body.data.accessToken) {
-            client.global.set("userToken", response.body.data.accessToken);
-        } else if (response.body.data && response.body.data.token) {
-            client.global.set("userToken", response.body.data.token);
-        } else if (response.body.accessToken) {
-            client.global.set("userToken", response.body.accessToken);
-        } else if (response.body.token) {
-            client.global.set("userToken", response.body.token);
-        } else {
-            client.log("USER accessToken 위치를 찾지 못했습니다. 로그인 응답 구조를 확인하세요.");
-        }
+    let token = null;
+
+    if (response.body.data && response.body.data.accessToken) {
+        token = response.body.data.accessToken;
+    } else if (response.body.data && response.body.data.token) {
+        token = response.body.data.token;
+    } else if (response.body.accessToken) {
+        token = response.body.accessToken;
+    } else if (response.body.token) {
+        token = response.body.token;
+    }
+
+    if (token) {
+        client.global.set("userToken", token);
+        client.log("USER token saved. startsWith = " + token.substring(0, 20));
+    } else {
+        client.log("USER accessToken 위치를 찾지 못했습니다.");
     }
 %}
 
@@ -142,6 +150,8 @@ Authorization: Bearer {{ownerToken}}
 }
 
 > {%
+    client.global.clear("restaurantId");
+
     client.log("식당 등록 응답");
     client.log(JSON.stringify(response.body, null, 2));
 
@@ -207,6 +217,8 @@ Authorization: Bearer {{ownerToken}}
 }
 
 > {%
+    client.global.clear("courseId");
+
     client.log("코스 등록 응답");
     client.log(JSON.stringify(response.body, null, 2));
 
