@@ -80,12 +80,11 @@ class RestaurantQueryRepositoryImplTest {
                 생성("MicheLet Bistro", RestaurantStatus.OPEN)
         );
 
-        RestaurantSearchCondition condition =
-                new RestaurantSearchCondition(
-                        "MicheLet",
-                        null,
-                        RestaurantStatus.OPEN
-                );
+        RestaurantSearchCondition condition = new RestaurantSearchCondition(
+                "MicheLet",
+                "강남구",
+                RestaurantStatus.OPEN
+        );
         PageRequest pageable = PageRequest.of(0, 1);
 
         Page<RestaurantSummaryResult> result =
@@ -96,6 +95,25 @@ class RestaurantQueryRepositoryImplTest {
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getContent().get(0).status()).isEqualTo(RestaurantStatus.OPEN);
         assertThat(result.getContent().get(0).name()).contains("MicheLet");
+    }
+
+    @Test
+    @DisplayName("지역으로 식당을 검색한다")
+    void 지역으로식당검색() {
+        RestaurantSearchCondition condition = new RestaurantSearchCondition(
+                null,
+                "강남구",
+                null
+        );
+
+        Page<RestaurantSummaryResult> result = restaurantQueryRepository.search(
+                condition,
+                PageRequest.of(0, 10)
+        );
+
+        assertThat(result.getContent())
+                .extracting(resultItem -> resultItem.address())
+                .allMatch(address -> address.contains("강남구"));
     }
 
     // 테스트용 식당 엔티티를 생성

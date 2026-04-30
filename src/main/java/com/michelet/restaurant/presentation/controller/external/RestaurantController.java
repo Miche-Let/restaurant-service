@@ -73,13 +73,13 @@ public class RestaurantController {
      */
     @GetMapping
     public ApiResponse<PageResponse<RestaurantSummaryResponse>> getRestaurants(@RequestParam(required = false) String keyword,
-                                                                               @RequestParam(required = false) String address,
+                                                                               @RequestParam(required = false) String region,
                                                                                @RequestParam(required = false) RestaurantStatus status,
                                                                                @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
         RestaurantSearchCondition condition = new RestaurantSearchCondition(
                 keyword,
-                address,
+                region,
                 status
         );
 

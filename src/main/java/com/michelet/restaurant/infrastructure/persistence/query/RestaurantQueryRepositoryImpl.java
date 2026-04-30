@@ -61,7 +61,7 @@ public class RestaurantQueryRepositoryImpl implements RestaurantQueryRepository 
     private BooleanBuilder buildPredicate(RestaurantSearchCondition condition) {
         BooleanBuilder builder = new BooleanBuilder();
 
-        // soft delete 된 식당은 목록/검색 조회에서 제외
+        // soft delete 된 식당은 목록/검색 조회에서 제외한다.
         builder.and(restaurant.deletedAt.isNull());
 
         if (condition == null) {
@@ -72,8 +72,10 @@ public class RestaurantQueryRepositoryImpl implements RestaurantQueryRepository 
             builder.and(restaurant.name.containsIgnoreCase(condition.keyword().trim()));
         }
 
-        if (condition.hasAddress()) {
-            builder.and(restaurant.address.containsIgnoreCase(condition.address().trim()));
+        // region은 API 검색 조건
+        // MVP에는 별도 region 컬럼이 없으므로 address 컬럼에 대한 포함 검색으로 처리
+        if (condition.hasRegion()) {
+            builder.and(restaurant.address.containsIgnoreCase(condition.region().trim()));
         }
 
         if (condition.hasStatus()) {

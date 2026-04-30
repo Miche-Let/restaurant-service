@@ -193,7 +193,7 @@ class RestaurantControllerTest {
 
         mockMvc.perform(get("/api/v1/restaurants")
                         .param("keyword", "MicheLet")
-                        .param("address", "강남구")
+                        .param("region", "강남구")
                         .param("status", "OPEN")
                         .param("page", "0")
                         .param("size", "10"))
@@ -201,6 +201,7 @@ class RestaurantControllerTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.content.length()").value(1))
                 .andExpect(jsonPath("$.data.content[0].name").value("MicheLet Dining"))
+                .andExpect(jsonPath("$.data.content[0].address").value("서울특별시 강남구 테헤란로 123"))
                 .andExpect(jsonPath("$.data.content[0].status").value("OPEN"))
                 .andExpect(jsonPath("$.data.totalElements").value(1))
                 .andExpect(jsonPath("$.data.size").value(10))

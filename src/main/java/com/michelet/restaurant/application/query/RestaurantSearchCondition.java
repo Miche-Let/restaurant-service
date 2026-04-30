@@ -10,7 +10,7 @@ import com.michelet.restaurant.domain.model.RestaurantStatus;
  */
 public record RestaurantSearchCondition(
         String keyword,
-        String address,
+        String region,
         RestaurantStatus status
 ) {
 
@@ -19,8 +19,10 @@ public record RestaurantSearchCondition(
         return keyword != null && !keyword.isBlank();
     }
 
-    public boolean hasAddress() {
-        return address != null && !address.isBlank();
+    // 지역 검색어가 존재하는지 확인
+    // MVP에서는 별도 region 컬럼이 없으므로 address 검색 조건으로 사용
+    public boolean hasRegion() {
+        return region != null && !region.isBlank();
     }
 
     // 식당 상태 조건이 존재하는지 확인
