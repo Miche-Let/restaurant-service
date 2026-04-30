@@ -2,6 +2,7 @@ package com.michelet.restaurant.application.service.query;
 
 import com.michelet.restaurant.application.result.CourseListItemResult;
 import com.michelet.restaurant.application.result.CourseMenuResult;
+import com.michelet.restaurant.application.result.CourseSummaryResult;
 import com.michelet.restaurant.domain.exception.RestaurantErrorCode;
 import com.michelet.restaurant.domain.exception.RestaurantException;
 import com.michelet.restaurant.domain.model.RestaurantCourse;
@@ -69,6 +70,17 @@ public class RestaurantCourseQueryService {
                         course,
                         menusByCourseId.getOrDefault(course.getCourseId(), List.of())
                 ))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<CourseSummaryResult> getInternalCourses(UUID restaurantId) {
+        restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new RestaurantException(RestaurantErrorCode.RESTAURANT_404_NOT_FOUND));
+
+        return restaurantCourseRepository.findAllByRestaurantIdOrderByCreatedAtAsc(restaurantId)
+                .stream()
+                .map(course -> CourseSummaryResult.from(course))
                 .toList();
     }
 }
