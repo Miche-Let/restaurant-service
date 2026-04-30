@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalTime;
 import java.util.List;
@@ -52,6 +53,8 @@ class RestaurantQueryServiceTest {
                 "MON-FRI 11:00-20:00 / SAT,SUN CLOSED"
         );
 
+        ReflectionTestUtils.setField(restaurant, "restaurantId", restaurantId);
+
         RestaurantCourse course = RestaurantCourse.create(
                 restaurantId,
                 "Dinner Course",
@@ -69,7 +72,7 @@ class RestaurantQueryServiceTest {
 
         GetRestaurantResult result = restaurantQueryService.getRestaurant(restaurantId);
 
-        assertThat(result.restaurantId()).isEqualTo(restaurant.getRestaurantId());
+        assertThat(result.restaurantId()).isEqualTo(restaurantId);
         assertThat(result.name()).isEqualTo("MicheLet Dining");
         assertThat(result.address()).isEqualTo("서울특별시 강남구 테헤란로 123");
 
