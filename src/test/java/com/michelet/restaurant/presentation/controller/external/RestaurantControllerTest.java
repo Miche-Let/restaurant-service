@@ -167,9 +167,8 @@ class RestaurantControllerTest {
                 .andExpect(jsonPath("$.data.content[1].name").value("MicheLet Bistro"))
                 .andExpect(jsonPath("$.data.content[1].status").value("CLOSED"))
                 .andExpect(jsonPath("$.data.totalElements").value(2))
-                .andExpect(jsonPath("$.data.totalPages").value(1))
                 .andExpect(jsonPath("$.data.size").value(2))
-                .andExpect(jsonPath("$.data.number").value(0));
+                .andExpect(jsonPath("$.data.page").value(0));
     }
 
 
@@ -193,7 +192,8 @@ class RestaurantControllerTest {
                 .willReturn(new PageImpl<>(content, pageRequest, 1));
 
         mockMvc.perform(get("/api/v1/restaurants")
-                        .param("name", "MicheLet")
+                        .param("keyword", "MicheLet")
+                        .param("address", "강남구")
                         .param("status", "OPEN")
                         .param("page", "0")
                         .param("size", "10"))
@@ -203,9 +203,8 @@ class RestaurantControllerTest {
                 .andExpect(jsonPath("$.data.content[0].name").value("MicheLet Dining"))
                 .andExpect(jsonPath("$.data.content[0].status").value("OPEN"))
                 .andExpect(jsonPath("$.data.totalElements").value(1))
-                .andExpect(jsonPath("$.data.totalPages").value(1))
                 .andExpect(jsonPath("$.data.size").value(10))
-                .andExpect(jsonPath("$.data.number").value(0));
+                .andExpect(jsonPath("$.data.page").value(0));
     }
 
 
