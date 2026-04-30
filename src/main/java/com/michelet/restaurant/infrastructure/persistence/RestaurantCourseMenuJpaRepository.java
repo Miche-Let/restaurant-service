@@ -16,4 +16,12 @@ public interface RestaurantCourseMenuJpaRepository extends JpaRepository<Restaur
      * sortOrder 오름차순으로 정렬된 코스 메뉴 목록
      */
     List<RestaurantCourseMenu> findAllByCourseIdOrderBySortOrderAsc(UUID courseId);
+
+    /**
+     * 여러 코스 ID 기준으로 코스 메뉴 목록을 한 번에 조회
+     *
+     * 코스마다 메뉴를 개별 조회하면 N+1 문제가 발생
+     * courseId IN 조건으로 메뉴 목록을 한 번에 조회
+     */
+    List<RestaurantCourseMenu> findAllByCourseIdInOrderByCourseIdAscSortOrderAsc(List<UUID> courseIds);
 }

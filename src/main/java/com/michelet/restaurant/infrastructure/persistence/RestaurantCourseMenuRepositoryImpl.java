@@ -27,4 +27,10 @@ public class RestaurantCourseMenuRepositoryImpl implements RestaurantCourseMenuR
     public List<RestaurantCourseMenu> findAllByCourseIdOrderBySortOrderAsc(UUID courseId) {
         return restaurantCourseMenuJpaRepository.findAllByCourseIdOrderBySortOrderAsc(courseId);
     }
+
+    // 여러 코스 ID 기준으로 코스 메뉴 목록을 한 번에 조회
+    @Override
+    public List<RestaurantCourseMenu> findAllByCourseIdInOrderByCourseIdAscSortOrderAsc(List<UUID> courseIds) {
+        return restaurantCourseMenuJpaRepository.findAllByCourseIdInOrderByCourseIdAscSortOrderAsc(courseIds);
+    }
 }
