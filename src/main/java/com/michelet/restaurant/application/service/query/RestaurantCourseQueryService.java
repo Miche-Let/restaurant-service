@@ -73,6 +73,7 @@ public class RestaurantCourseQueryService {
                 .toList();
     }
 
+    // 식당 ID 기준으로 내부 코스 목록을 조회
     @Transactional(readOnly = true)
     public List<CourseSummaryResult> getInternalCourses(UUID restaurantId) {
         restaurantRepository.findById(restaurantId)
