@@ -27,7 +27,7 @@ public class RestaurantCourseQueryService {
     }
 
     @Transactional(readOnly = true)
-    public List<CourseListItemResult> getCourse(UUID restaurantId) {
+    public List<CourseListItemResult> getCourses(UUID restaurantId) {
         restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new RestaurantException(RestaurantErrorCode.RESTAURANT_404_NOT_FOUND));
 
