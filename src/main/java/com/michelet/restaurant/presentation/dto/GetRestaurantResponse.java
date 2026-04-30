@@ -4,6 +4,7 @@ import com.michelet.restaurant.application.result.GetRestaurantResult;
 import com.michelet.restaurant.domain.model.RestaurantStatus;
 
 import java.time.LocalTime;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -21,7 +22,8 @@ public record GetRestaurantResponse(
         LocalTime reservationOpenAt,
         Integer avgMealDurationMin,
         RestaurantStatus status,
-        String businessHours
+        String businessHours,
+        List<CourseSummaryResponse> courses
 ) {
 
     /**
@@ -39,7 +41,10 @@ public record GetRestaurantResponse(
                 result.reservationOpenAt(),
                 result.avgMealDurationMin(),
                 result.status(),
-                result.businessHours()
+                result.businessHours(),
+                result.courses().stream()
+                        .map(course -> CourseSummaryResponse.from(course))
+                        .toList()
         );
     }
 }
