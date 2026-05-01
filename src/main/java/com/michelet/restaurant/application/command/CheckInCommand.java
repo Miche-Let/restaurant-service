@@ -1,22 +1,27 @@
 package com.michelet.restaurant.application.command;
 
+import com.michelet.common.auth.core.enums.UserRole;
+
 import java.util.UUID;
 
 public record CheckInCommand(
         UUID restaurantId,
         UUID reservationId,
-        UUID checkedInBy
+        UUID checkedInBy,
+        UserRole userRole
 ) {
 
     public static CheckInCommand of(
             UUID restaurantId,
             UUID reservationId,
-            UUID checkedInBy
+            UUID checkedInBy,
+            UserRole userRole
     ) {
         return new CheckInCommand(
                 validateRestaurantId(restaurantId),
                 validateReservationId(reservationId),
-                validateCheckedInBy(checkedInBy)
+                validateCheckedInBy(checkedInBy),
+                validateUserRole(userRole)
         );
     }
 
@@ -41,4 +46,10 @@ public record CheckInCommand(
         return checkedInBy;
     }
 
+    private static UserRole validateUserRole(UserRole userRole) {
+        if (userRole == null) {
+            throw new IllegalArgumentException("체크인 처리자 권한은 필수입니다.");
+        }
+        return userRole;
+    }
 }
