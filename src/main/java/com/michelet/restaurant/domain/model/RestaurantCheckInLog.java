@@ -75,17 +75,14 @@ public class RestaurantCheckInLog extends BaseEntity {
     public static RestaurantCheckInLog createCheckedIn(
             UUID restaurantId,
             UUID reservationId,
+            LocalDate visitDate,
             UUID checkedInBy,
             LocalDateTime checkedInAt
     ) {
-        if (checkedInAt == null) {
-            throw new IllegalArgumentException("체크인 처리 시각은 필수입니다.");
-        }
-
         return new RestaurantCheckInLog(
                 restaurantId,
                 reservationId,
-                checkedInAt.toLocalDate(),
+                visitDate,
                 CheckInStatus.CHECKED_IN,
                 checkedInBy,
                 checkedInAt,
