@@ -72,9 +72,6 @@ Content-Type: application/json
 > {%
     client.global.clear("ownerToken");
 
-    client.log("OWNER 로그인 응답");
-    client.log(JSON.stringify(response.body, null, 2));
-
     let token = null;
 
     if (response.body.data && response.body.data.accessToken) {
@@ -89,9 +86,6 @@ Content-Type: application/json
 
     if (token) {
         client.global.set("ownerToken", token);
-        client.log("OWNER token saved. startsWith = " + token.substring(0, 20));
-    } else {
-        client.log("OWNER accessToken 위치를 찾지 못했습니다.");
     }
 %}
 
@@ -109,9 +103,6 @@ Content-Type: application/json
 > {%
     client.global.clear("userToken");
 
-    client.log("USER 로그인 응답");
-    client.log(JSON.stringify(response.body, null, 2));
-
     let token = null;
 
     if (response.body.data && response.body.data.accessToken) {
@@ -126,9 +117,6 @@ Content-Type: application/json
 
     if (token) {
         client.global.set("userToken", token);
-        client.log("USER token saved. startsWith = " + token.substring(0, 20));
-    } else {
-        client.log("USER accessToken 위치를 찾지 못했습니다.");
     }
 %}
 
@@ -151,9 +139,6 @@ Authorization: Bearer {{ownerToken}}
 
 > {%
     client.global.clear("restaurantId");
-
-    client.log("식당 등록 응답");
-    client.log(JSON.stringify(response.body, null, 2));
 
     if (response.status === 200 && response.body.data) {
         client.global.set("restaurantId", response.body.data.restaurantId);
@@ -218,9 +203,6 @@ Authorization: Bearer {{ownerToken}}
 
 > {%
     client.global.clear("courseId");
-
-    client.log("코스 등록 응답");
-    client.log(JSON.stringify(response.body, null, 2));
 
     if (response.status === 200 && response.body.data) {
         client.global.set("courseId", response.body.data.courseId);
