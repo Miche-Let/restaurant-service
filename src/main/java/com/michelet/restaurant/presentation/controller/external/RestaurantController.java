@@ -1,5 +1,8 @@
 package com.michelet.restaurant.presentation.controller.external;
 
+import com.michelet.common.auth.core.annotation.RequireRole;
+import com.michelet.common.auth.core.enums.UserRole;
+import com.michelet.common.auth.webmvc.context.UserContextHolder;
 import com.michelet.common.response.ApiResponse;
 import com.michelet.restaurant.application.command.CreateRestaurantCommand;
 import com.michelet.restaurant.application.query.RestaurantSearchCondition;
@@ -8,6 +11,8 @@ import com.michelet.restaurant.application.result.GetRestaurantResult;
 import com.michelet.restaurant.application.result.RestaurantSummaryResult;
 import com.michelet.restaurant.application.service.command.RestaurantCommandService;
 import com.michelet.restaurant.application.service.query.RestaurantQueryService;
+import com.michelet.restaurant.domain.exception.RestaurantErrorCode;
+import com.michelet.restaurant.domain.exception.RestaurantException;
 import com.michelet.restaurant.domain.model.RestaurantStatus;
 import com.michelet.restaurant.presentation.dto.*;
 import jakarta.validation.Valid;
@@ -32,15 +37,14 @@ public class RestaurantController {
     }
 
     /**
-     * 식당 등록 API
-     *
-     * 시큐리티 미구현 상태
-     * 임시로 X-User-Id 전달받음
-     * 추후 변경
+     * 식당 등록
+     * 식당 등록은 OWNER 권한을 가진 사용자만 수행
      */
+    @RequireRole(UserRole.OWNER)
     @PostMapping
-    public ApiResponse<CreateRestaurantResponse> createRestaurant(@RequestHeader("X-User-Id") UUID ownerId,
-                                                                  @Valid @RequestBody CreateRestaurantRequest request) {
+    public ApiResponse<CreateRestaurantResponse> createRestaurant(@Valid @RequestBody CreateRestaurantRequest request) {
+
+        UUID ownerId = getAuthenticatedUserId();
 
         CreateRestaurantCommand command = CreateRestaurantCommand.of(ownerId, request);
         CreateRestaurantResult result = restaurantCommandService.createRestaurant(command);
@@ -55,10 +59,10 @@ public class RestaurantController {
 
     /**
      * 식당 상세 조회 API
-     *
      * 사용자가 식당 상세 정보를 조회할 때 사용하는 외부 API
      * ownerId 같은 내부 식별 정보는 응답에 포함x
      */
+    @RequireRole({UserRole.USER, UserRole.OWNER, UserRole.MASTER})
     @GetMapping("/{restaurantId}")
     public ApiResponse<GetRestaurantResponse> getRestaurant(@PathVariable UUID restaurantId) {
 
@@ -71,6 +75,7 @@ public class RestaurantController {
      * 식당 목록/검색 조회 API
      * Pageable 기본값은 createdAt desc, size 10으로 설정
      */
+    @RequireRole({UserRole.USER, UserRole.OWNER, UserRole.MASTER})
     @GetMapping
     public ApiResponse<PageResponse<RestaurantSummaryResponse>> getRestaurants(@RequestParam(required = false) String keyword,
                                                                                @RequestParam(required = false) String region,
@@ -92,5 +97,15 @@ public class RestaurantController {
                 resultPage.map(result -> RestaurantSummaryResponse.from(result));
 
         return ApiResponse.ok(PageResponse.from(responsePage));
+    }
+
+    private UUID getAuthenticatedUserId() {
+        String userId = UserContextHolder.get().userId();
+
+        try {
+            return UUID.fromString(userId);
+        } catch (IllegalArgumentException exception) {
+            throw new RestaurantException(RestaurantErrorCode.RESTAURANT_401_INVALID_AUTH_USER_ID);
+        }
     }
 }

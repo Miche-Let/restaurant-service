@@ -1,5 +1,7 @@
 package com.michelet.restaurant.presentation.controller.external;
 
+import com.michelet.common.auth.core.annotation.RequireRole;
+import com.michelet.common.auth.core.enums.UserRole;
 import com.michelet.common.response.ApiResponse;
 import com.michelet.restaurant.application.command.CreateCourseCommand;
 import com.michelet.restaurant.application.result.CourseListItemResult;
@@ -27,6 +29,8 @@ public class RestaurantCourseController {
         this.restaurantCourseQueryService = restaurantCourseQueryService;
     }
 
+    // 식당 코스등록
+    @RequireRole(UserRole.OWNER)
     @PostMapping
     public ApiResponse<CourseResponse> createCourse(@PathVariable UUID restaurantId,
                                                     @Valid @RequestBody CreateCourseRequest request) {
@@ -46,6 +50,7 @@ public class RestaurantCourseController {
      * 식당 ID 기준으로 외부 코스 목록을 조회
      * 외부 코스 목록 조회 응답은 코스 요약 정보와 menus[]를 함께 포함
      */
+    @RequireRole({UserRole.USER, UserRole.OWNER})
     @GetMapping
     public ApiResponse<List<CourseListItemResponse>> getCourses(@PathVariable UUID restaurantId) {
 

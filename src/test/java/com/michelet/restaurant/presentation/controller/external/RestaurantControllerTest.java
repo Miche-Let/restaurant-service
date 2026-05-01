@@ -7,7 +7,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.michelet.common.auth.core.context.UserContext;
+import com.michelet.common.auth.core.enums.UserRole;
+import com.michelet.common.auth.webmvc.context.UserContextHolder;
 import com.michelet.common.exception.GlobalExceptionHandler;
+import com.michelet.restaurant.application.command.CreateRestaurantCommand;
 import com.michelet.restaurant.application.query.RestaurantSearchCondition;
 import com.michelet.restaurant.application.result.CourseSummaryResult;
 import com.michelet.restaurant.application.result.CreateRestaurantResult;
@@ -23,8 +28,12 @@ import com.michelet.restaurant.domain.model.RestaurantStatus;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
+
+import com.michelet.restaurant.presentation.dto.CreateRestaurantRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -34,17 +43,16 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-/**
- * 외부 식당 API 컨트롤러 테스트
- * <p>
- * 식당 등록, 외부 식당 상세 조회, 예외 응답을 검증
- */
+// 외부 식당 API 컨트롤러 테스트
 @WebMvcTest(RestaurantController.class)
 @Import(GlobalExceptionHandler.class)
 class RestaurantControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @MockitoBean
     private RestaurantCommandService restaurantCommandService;
@@ -58,30 +66,40 @@ class RestaurantControllerTest {
         UUID ownerId = UUID.randomUUID();
         UUID restaurantId = UUID.randomUUID();
 
-        given(restaurantCommandService.createRestaurant(any()))
-                .willReturn(new CreateRestaurantResult(restaurantId, ownerId));
+        CreateRestaurantRequest request = new CreateRestaurantRequest(
+                "MicheLet Dining",
+                "서울특별시 강남구 테헤란로 123",
+                "02-1234-5678",
+                "파인다이닝 레스토랑",
+                LocalTime.of(10, 0),
+                90,
+                RestaurantStatus.OPEN,
+                "MON-FRI 11:00-20:00 / SAT,SUN CLOSED"
+        );
 
-        String requestBody = """
-                {
-                  "name": "MicheLet Dining",
-                  "address": "서울특별시 강남구 테헤란로 123",
-                  "phone": "02-1234-5678",
-                  "description": "파인다이닝 레스토랑",
-                  "reservationOpenAt": "10:00:00",
-                  "avgMealDurationMin": 90,
-                  "status": "OPEN",
-                  "businessHours": "MON-FRI 11:00-20:00 / SAT,SUN CLOSED"
-                }
-                """;
+        given(restaurantCommandService.createRestaurant(any(CreateRestaurantCommand.class)))
+                .willReturn(new CreateRestaurantResult(
+                        restaurantId,
+                        ownerId
+                ));
 
-        mockMvc.perform(post("/api/v1/restaurants")
-                        .header("X-User-Id", ownerId.toString())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.restaurantId").value(restaurantId.toString()))
-                .andExpect(jsonPath("$.data.ownerId").value(ownerId.toString()));
+        try (MockedStatic<UserContextHolder> mockedUserContextHolder =
+                     Mockito.mockStatic(UserContextHolder.class)) {
+
+            mockedUserContextHolder.when(UserContextHolder::get)
+                    .thenReturn(new UserContext(
+                            ownerId.toString(),
+                            UserRole.OWNER
+                    ));
+
+            mockMvc.perform(post("/api/v1/restaurants")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.data.restaurantId").value(restaurantId.toString()))
+                    .andExpect(jsonPath("$.data.ownerId").value(ownerId.toString()));
+        }
     }
 
     @Test
