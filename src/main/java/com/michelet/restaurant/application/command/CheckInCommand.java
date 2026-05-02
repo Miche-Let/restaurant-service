@@ -10,6 +10,13 @@ public record CheckInCommand(
         UUID checkedInBy,
         UserRole userRole
 ) {
+    // record canonical constructor 검증
+    public CheckInCommand {
+        restaurantId = validateRestaurantId(restaurantId);
+        reservationId = validateReservationId(reservationId);
+        checkedInBy = validateCheckedInBy(checkedInBy);
+        userRole = validateUserRole(userRole);
+    }
 
     public static CheckInCommand of(
             UUID restaurantId,
@@ -18,10 +25,10 @@ public record CheckInCommand(
             UserRole userRole
     ) {
         return new CheckInCommand(
-                validateRestaurantId(restaurantId),
-                validateReservationId(reservationId),
-                validateCheckedInBy(checkedInBy),
-                validateUserRole(userRole)
+                restaurantId,
+                reservationId,
+                checkedInBy,
+                userRole
         );
     }
 
