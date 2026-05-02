@@ -1,14 +1,22 @@
 package com.michelet.restaurant.domain.model;
 
 import com.michelet.common.entity.BaseEntity;
-import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
+import jakarta.persistence.Access;
+import jakarta.persistence.AccessType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
@@ -17,10 +25,15 @@ import java.util.UUID;
         indexes = {
                 // 식당 기준 체크인 이력 조회 대비
                 @Index(name = "idx_checkin_log_restaurant_id", columnList = "restaurant_id"),
-                // 예약 ID 기준 중복 체크/추적 대비
-                @Index(name = "idx_checkin_log_reservation_id", columnList = "reservation_id"),
                 // 방문 일자 기준 이력 조회 대비
                 @Index(name = "idx_checkin_log_visit_date", columnList = "visit_date")
+        },
+        uniqueConstraints = {
+                // 하나의 예약에 대해 체크인 로그가 중복 저장되지 않도록 방어
+                @UniqueConstraint(
+                        name = "uk_checkin_log_reservation_id",
+                        columnNames = "reservation_id"
+                )
         }
 )
 @Access(AccessType.FIELD)
@@ -28,13 +41,13 @@ import java.util.UUID;
 public class RestaurantCheckInLog extends BaseEntity {
 
     @Id
-    @Column(name = "checkin_log_id", nullable = false, updatable = false)
+    @Column(name = "checkin_log_id", nullable = false, updatable = false, columnDefinition = "uuid")
     private UUID checkinLogId;
 
-    @Column(name = "restaurant_id", nullable = false)
+    @Column(name = "restaurant_id", nullable = false, columnDefinition = "uuid")
     private UUID restaurantId;
 
-    @Column(name = "reservation_id", nullable = false)
+    @Column(name = "reservation_id", nullable = false, columnDefinition = "uuid")
     private UUID reservationId;
 
     @Column(name = "visit_date", nullable = false)
@@ -44,15 +57,16 @@ public class RestaurantCheckInLog extends BaseEntity {
     @Column(name = "status", nullable = false, length = 30)
     private CheckInStatus status;
 
-    @Column(name = "checked_in_by", nullable = false)
+    @Column(name = "checked_in_by", nullable = false, columnDefinition = "uuid")
     private UUID checkedInBy;
 
     @Column(name = "checked_in_at", nullable = false)
     private LocalDateTime checkedInAt;
 
-    @Column(name = "note", columnDefinition = "text")
+    @Column(name = "note", columnDefinition = "TEXT")
     private String note;
 
+    // 식당 체크인 이력을 생성
     private RestaurantCheckInLog(
             UUID restaurantId,
             UUID reservationId,
@@ -72,6 +86,7 @@ public class RestaurantCheckInLog extends BaseEntity {
         this.note = normalizeNote(note);
     }
 
+    // 체크인 완료 이력을 생성
     public static RestaurantCheckInLog createCheckedIn(
             UUID restaurantId,
             UUID reservationId,
