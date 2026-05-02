@@ -10,7 +10,7 @@ public record ReservationCheckInResponse(
     private static final String CHECKED_IN_STATUS = "CHECKED_IN";
 
     // reservation-service 응답 상태가 체크인 완료 상태인지 확인
-    public boolean inCheckedIn() {
+    public boolean isCheckedIn() {
         return CHECKED_IN_STATUS.equals(status);
     }
 }
