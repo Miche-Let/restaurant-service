@@ -10,7 +10,10 @@ import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.UUID;
 
-@FeignClient(name = "reservation-service")
+@FeignClient(
+        name = "reservation-service",
+        url = "${feign.reservation-service.url:}"
+)
 public interface ReservationClient {
 
     @PatchMapping("/internal/reservations/check-in")
