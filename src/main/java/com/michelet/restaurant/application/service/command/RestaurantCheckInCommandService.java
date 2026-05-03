@@ -40,7 +40,7 @@ public class RestaurantCheckInCommandService {
         validateCheckInAuthority(restaurant, command);
 
         ReservationCheckInResponse reservationCheckInResponse = requestReservationCheckIn(command);
-        validateReservationCheckInResponse(command, reservationCheckInResponse);
+        validateReservationCheckInResponse(reservationCheckInResponse);
 
         RestaurantCheckInLog checkInLog = RestaurantCheckInLog.createCheckedIn(
                 command.restaurantId(),
@@ -92,20 +92,7 @@ public class RestaurantCheckInCommandService {
     }
 
     // reservation-service 체크인 응답을 검증
-    private void validateReservationCheckInResponse(
-            CheckInCommand command,
-            ReservationCheckInResponse response
-    ) {
-        if (response.reservationId() == null
-                || !response.reservationId().equals(command.reservationId())) {
-            throw new CheckInException(CheckInErrorCode.CHECKIN_502_INVALID_RESERVATION_RESPONSE);
-        }
-
-        if (response.restaurantId() == null
-                || !response.restaurantId().equals(command.restaurantId())) {
-            throw new CheckInException(CheckInErrorCode.CHECKIN_502_INVALID_RESERVATION_RESPONSE);
-        }
-
+    private void validateReservationCheckInResponse(ReservationCheckInResponse response) {
         if (response.visitDate() == null || response.checkedInAt() == null) {
             throw new CheckInException(CheckInErrorCode.CHECKIN_502_INVALID_RESERVATION_RESPONSE);
         }
