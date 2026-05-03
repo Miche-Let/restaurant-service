@@ -13,10 +13,10 @@ public record ReservationCheckInResponse(
         LocalDateTime checkedInAt
 ) {
 
-    private static final String CHECKED_IN_STATUS = "CHECKED_IN";
+    private static final String COMPLETED_STATUS  = "COMPLETED";
 
     // reservation-service 응답 상태가 체크인 완료 상태인지 확인
     public boolean isCheckedIn() {
-        return CHECKED_IN_STATUS.equals(status);
+        return COMPLETED_STATUS .equals(status);
     }
 }
