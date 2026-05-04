@@ -1,4 +1,4 @@
-package com.michelet.restaurant.infrastructure.client.dto;
+package com.michelet.restaurantservice.checkin.infrastructure.client.dto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

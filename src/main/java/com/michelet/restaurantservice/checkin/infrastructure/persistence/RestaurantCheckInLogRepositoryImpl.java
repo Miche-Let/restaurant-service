@@ -1,7 +1,7 @@
-package com.michelet.restaurant.infrastructure.persistence;
+package com.michelet.restaurantservice.checkin.infrastructure.persistence;
 
-import com.michelet.restaurant.domain.model.RestaurantCheckInLog;
-import com.michelet.restaurant.domain.repository.RestaurantCheckInLogRepository;
+import com.michelet.restaurantservice.checkin.domain.model.RestaurantCheckInLog;
+import com.michelet.restaurantservice.checkin.domain.repository.RestaurantCheckInLogRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository

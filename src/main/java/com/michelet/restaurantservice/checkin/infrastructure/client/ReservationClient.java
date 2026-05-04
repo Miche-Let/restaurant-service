@@ -1,8 +1,8 @@
-package com.michelet.restaurant.infrastructure.client;
+package com.michelet.restaurantservice.checkin.infrastructure.client;
 
 import com.michelet.common.response.ApiResponse;
-import com.michelet.restaurant.infrastructure.client.dto.ReservationCheckInRequest;
-import com.michelet.restaurant.infrastructure.client.dto.ReservationCheckInResponse;
+import com.michelet.restaurantservice.checkin.infrastructure.client.dto.ReservationCheckInRequest;
+import com.michelet.restaurantservice.checkin.infrastructure.client.dto.ReservationCheckInResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
