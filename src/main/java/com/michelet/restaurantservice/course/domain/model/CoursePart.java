@@ -1,4 +1,4 @@
-package com.michelet.restaurant.domain.model;
+package com.michelet.restaurantservice.course.domain.model;
 
 import lombok.Getter;
 
