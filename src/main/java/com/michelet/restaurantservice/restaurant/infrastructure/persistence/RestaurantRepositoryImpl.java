@@ -1,7 +1,7 @@
-package com.michelet.restaurant.infrastructure.persistence;
+package com.michelet.restaurantservice.restaurant.infrastructure.persistence;
 
-import com.michelet.restaurant.domain.model.Restaurant;
-import com.michelet.restaurant.domain.repository.RestaurantRepository;
+import com.michelet.restaurantservice.restaurant.domain.model.Restaurant;
+import com.michelet.restaurantservice.restaurant.domain.repository.RestaurantRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

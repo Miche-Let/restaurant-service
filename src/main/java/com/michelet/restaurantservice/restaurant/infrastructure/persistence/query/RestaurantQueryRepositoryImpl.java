@@ -1,8 +1,8 @@
-package com.michelet.restaurant.infrastructure.persistence.query;
+package com.michelet.restaurantservice.restaurant.infrastructure.persistence.query;
 
-import com.michelet.restaurant.application.query.RestaurantSearchCondition;
-import com.michelet.restaurant.application.query.repository.RestaurantQueryRepository;
-import com.michelet.restaurant.application.result.RestaurantSummaryResult;
+import com.michelet.restaurantservice.restaurant.application.query.RestaurantSearchCondition;
+import com.michelet.restaurantservice.restaurant.application.query.repository.RestaurantQueryRepository;
+import com.michelet.restaurantservice.restaurant.application.result.RestaurantSummaryResult;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.michelet.restaurant.domain.model.QRestaurant.restaurant;
+import static com.michelet.restaurantservice.domain.model.QRestaurant.restaurant;
 
 /**
  * 식당 목록/검색 조회용 QueryDSL 구현체
