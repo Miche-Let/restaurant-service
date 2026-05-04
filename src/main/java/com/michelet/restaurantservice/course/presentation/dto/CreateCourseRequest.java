@@ -1,7 +1,7 @@
-package com.michelet.restaurant.presentation.dto;
+package com.michelet.restaurantservice.course.presentation.dto;
 
-import com.michelet.restaurant.domain.model.CourseSessionType;
-import com.michelet.restaurant.domain.model.CourseStatus;
+import com.michelet.restaurantservice.course.domain.model.CourseSessionType;
+import com.michelet.restaurantservice.course.domain.model.CourseStatus;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 

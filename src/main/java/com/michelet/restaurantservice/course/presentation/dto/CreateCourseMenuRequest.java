@@ -1,6 +1,6 @@
-package com.michelet.restaurant.presentation.dto;
+package com.michelet.restaurantservice.course.presentation.dto;
 
-import com.michelet.restaurant.domain.model.CoursePart;
+import com.michelet.restaurantservice.course.domain.model.CoursePart;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

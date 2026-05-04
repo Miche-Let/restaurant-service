@@ -1,7 +1,7 @@
-package com.michelet.restaurant.presentation.dto;
+package com.michelet.restaurantservice.course.presentation.dto;
 
-import com.michelet.restaurant.application.result.CourseMenuResult;
-import com.michelet.restaurant.domain.model.CoursePart;
+import com.michelet.restaurantservice.course.application.result.CourseMenuResult;
+import com.michelet.restaurantservice.course.domain.model.CoursePart;
 
 public record CourseMenuResponse(
         // 코스 구성 구간(AMUSE_BOUCHE, APPETIZER, FISH, MAIN, DESSERT)
