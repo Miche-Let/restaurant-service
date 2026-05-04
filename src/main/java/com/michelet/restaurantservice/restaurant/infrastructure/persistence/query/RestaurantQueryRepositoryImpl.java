@@ -16,8 +16,7 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.michelet.restaurantservice.domain.model.QRestaurant.restaurant;
-
+import static com.michelet.restaurantservice.restaurant.domain.model.QRestaurant.restaurant;
 /**
  * 식당 목록/검색 조회용 QueryDSL 구현체
  *

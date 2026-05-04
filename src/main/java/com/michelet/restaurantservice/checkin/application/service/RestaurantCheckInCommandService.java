@@ -6,12 +6,12 @@ import com.michelet.restaurantservice.checkin.application.command.CheckInCommand
 import com.michelet.restaurantservice.checkin.application.result.CheckInResult;
 import com.michelet.restaurantservice.checkin.domain.exception.CheckInErrorCode;
 import com.michelet.restaurantservice.checkin.domain.exception.CheckInException;
-import com.michelet.restaurantservice.domain.exception.RestaurantErrorCode;
-import com.michelet.restaurantservice.domain.exception.RestaurantException;
-import com.michelet.restaurantservice.domain.model.Restaurant;
+import com.michelet.restaurantservice.restaurant.domain.exception.RestaurantErrorCode;
+import com.michelet.restaurantservice.restaurant.domain.exception.RestaurantException;
+import com.michelet.restaurantservice.restaurant.domain.model.Restaurant;
 import com.michelet.restaurantservice.checkin.domain.model.RestaurantCheckInLog;
 import com.michelet.restaurantservice.checkin.domain.repository.RestaurantCheckInLogRepository;
-import com.michelet.restaurantservice.domain.repository.RestaurantRepository;
+import com.michelet.restaurantservice.restaurant.domain.repository.RestaurantRepository;
 import com.michelet.restaurantservice.checkin.infrastructure.client.ReservationClient;
 import com.michelet.restaurantservice.checkin.infrastructure.client.dto.ReservationCheckInRequest;
 import com.michelet.restaurantservice.checkin.infrastructure.client.dto.ReservationCheckInResponse;

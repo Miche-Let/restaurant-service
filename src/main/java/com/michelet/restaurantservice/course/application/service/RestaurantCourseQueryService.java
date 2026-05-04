@@ -3,13 +3,13 @@ package com.michelet.restaurantservice.course.application.service;
 import com.michelet.restaurantservice.course.application.result.CourseListItemResult;
 import com.michelet.restaurantservice.course.application.result.CourseMenuResult;
 import com.michelet.restaurantservice.course.application.result.CourseSummaryResult;
-import com.michelet.restaurantservice.domain.exception.RestaurantErrorCode;
-import com.michelet.restaurantservice.domain.exception.RestaurantException;
+import com.michelet.restaurantservice.restaurant.domain.exception.RestaurantErrorCode;
+import com.michelet.restaurantservice.restaurant.domain.exception.RestaurantException;
 import com.michelet.restaurantservice.course.domain.model.RestaurantCourse;
 import com.michelet.restaurantservice.course.domain.model.RestaurantCourseMenu;
 import com.michelet.restaurantservice.course.domain.repository.RestaurantCourseMenuRepository;
 import com.michelet.restaurantservice.course.domain.repository.RestaurantCourseRepository;
-import com.michelet.restaurantservice.domain.repository.RestaurantRepository;
+import com.michelet.restaurantservice.restaurant.domain.repository.RestaurantRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
