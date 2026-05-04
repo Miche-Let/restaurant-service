@@ -15,6 +15,7 @@ import com.michelet.restaurant.domain.repository.RestaurantRepository;
 import com.michelet.restaurant.infrastructure.client.ReservationClient;
 import com.michelet.restaurant.infrastructure.client.dto.ReservationCheckInRequest;
 import com.michelet.restaurant.infrastructure.client.dto.ReservationCheckInResponse;
+import feign.FeignException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -75,20 +76,28 @@ public class RestaurantCheckInCommandService {
     }
 
     private ReservationCheckInResponse requestReservationCheckIn(CheckInCommand command) {
-        ApiResponse<ReservationCheckInResponse> response = reservationClient.checkInReservation(
-                ReservationCheckInRequest.of(
-                        command.reservationId(),
-                        command.restaurantId()
-                ),
-                command.checkedInBy(),
-                command.userRole().name()
-        );
+        try {
+            ApiResponse<ReservationCheckInResponse> response = reservationClient.checkInReservation(
+                    ReservationCheckInRequest.of(
+                            command.reservationId(),
+                            command.restaurantId()
+                    ),
+                    command.checkedInBy(),
+                    command.userRole().name()
+            );
 
-        if (response == null || response.data() == null) {
-            throw new CheckInException(CheckInErrorCode.CHECKIN_502_INVALID_RESERVATION_RESPONSE);
+            if (response == null || response.data() == null) {
+                throw new CheckInException(CheckInErrorCode.CHECKIN_502_INVALID_RESERVATION_RESPONSE);
+            }
+
+            return response.data();
+        } catch (FeignException.NotFound exception) {
+            throw new CheckInException(CheckInErrorCode.CHECKIN_404_RESERVATION_NOT_FOUND);
+        } catch (FeignException.BadRequest exception) {
+            throw new CheckInException(CheckInErrorCode.CHECKIN_400_RESERVATION_CHECK_IN_FAILED);
+        } catch (FeignException.Conflict exception) {
+            throw new CheckInException(CheckInErrorCode.CHECKIN_409_RESERVATION_CHECK_IN_FAILED);
         }
-
-        return response.data();
     }
 
     // reservation-service 체크인 응답을 검증
