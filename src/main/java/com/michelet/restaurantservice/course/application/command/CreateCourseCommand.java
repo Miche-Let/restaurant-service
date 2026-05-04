@@ -2,7 +2,7 @@ package com.michelet.restaurantservice.course.application.command;
 
 import com.michelet.restaurantservice.course.domain.model.CourseSessionType;
 import com.michelet.restaurantservice.course.domain.model.CourseStatus;
-import com.michelet.restaurantservice.presentation.dto.CreateCourseRequest;
+import com.michelet.restaurantservice.course.presentation.dto.CreateCourseRequest;
 
 import java.util.List;
 import java.util.UUID;
