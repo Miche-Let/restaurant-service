@@ -1,6 +1,6 @@
-package com.michelet.restaurant.infrastructure.persistence;
+package com.michelet.restaurantservice.course.infrastructure.persistence;
 
-import com.michelet.restaurant.domain.model.RestaurantCourseMenu;
+import com.michelet.restaurantservice.course.domain.model.RestaurantCourseMenu;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

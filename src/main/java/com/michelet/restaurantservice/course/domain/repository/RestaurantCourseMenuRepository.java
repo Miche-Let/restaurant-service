@@ -1,6 +1,6 @@
-package com.michelet.restaurant.domain.repository;
+package com.michelet.restaurantservice.course.domain.repository;
 
-import com.michelet.restaurant.domain.model.RestaurantCourseMenu;
+import com.michelet.restaurantservice.course.domain.model.RestaurantCourseMenu;
 
 import java.util.List;
 import java.util.UUID;
