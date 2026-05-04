@@ -249,30 +249,51 @@ Authorization: Bearer {{userToken}}
 
 
 ### 7. 같은 예약 재체크인 - 중복 체크인 실패 확인
+### 기대: 400 Bad Request
 PATCH {{gatewayUrl}}/api/v1/restaurants/{{restaurantId}}/reservations/{{reservationId}}/check-in
 Authorization: Bearer {{ownerToken}}
 
 > {%
-    client.log("중복 체크인 응답");
-    client.log(JSON.stringify(response.body, null, 2));
+    if (response.status !== 400) {
+        client.log(JSON.stringify(response.body, null, 2));
+        throw new Error("중복 체크인 실패 응답이 400이 아닙니다.");
+    }
+
+    if (response.body.success !== false) {
+        client.log(JSON.stringify(response.body, null, 2));
+        throw new Error("중복 체크인 응답 success 값이 false가 아닙니다.");
+    }
 %}
 
-
 ### 8. USER 토큰으로 체크인 시도 - 권한 실패 확인
+### 기대: 403 Forbidden
 PATCH {{gatewayUrl}}/api/v1/restaurants/{{restaurantId}}/reservations/{{reservationId}}/check-in
 Authorization: Bearer {{userToken}}
 
 > {%
-    client.log("USER 체크인 시도 응답");
-    client.log(JSON.stringify(response.body, null, 2));
-%}
+    if (response.status !== 403) {
+        client.log(JSON.stringify(response.body, null, 2));
+        throw new Error("USER 체크인 권한 실패 응답이 403이 아닙니다.");
+    }
 
+    if (response.body.success !== false) {
+        client.log(JSON.stringify(response.body, null, 2));
+        throw new Error("USER 체크인 권한 실패 응답 success 값이 false가 아닙니다.");
+    }
+%}
 
 ### 9. 존재하지 않는 식당 체크인 - 404 확인
 PATCH {{gatewayUrl}}/api/v1/restaurants/00000000-0000-0000-0000-000000000000/reservations/{{reservationId}}/check-in
 Authorization: Bearer {{ownerToken}}
 
 > {%
-    client.log("존재하지 않는 식당 체크인 응답");
-    client.log(JSON.stringify(response.body, null, 2));
+    if (response.status !== 404) {
+        client.log(JSON.stringify(response.body, null, 2));
+        throw new Error("존재하지 않는 식당 체크인 응답이 404가 아닙니다.");
+    }
+
+    if (response.body.success !== false) {
+        client.log(JSON.stringify(response.body, null, 2));
+        throw new Error("존재하지 않는 식당 체크인 응답 success 값이 false가 아닙니다.");
+    }
 %}
