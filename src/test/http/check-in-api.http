@@ -1,0 +1,278 @@
+### 공통 변수
+### Gateway 경유 호출
+@gatewayUrl = http://localhost:19000
+
+### 직접 reservation-service 호출이 필요할 때만 사용
+@reservationDirectUrl = http://localhost:19500
+
+### 테스트 OWNER 계정
+@ownerLoginId = test9
+@ownerPassword = test123!
+
+### 테스트 USER 계정
+@userLoginId = test8
+@userPassword = test123!
+
+### 예약 생성용 임시 값
+### RESERVATION_006이 나오면 reservedDate/slotStartTime 또는 timeSlotId를 바꿔서 다시 실행
+# @timeSlotId = 66666666-6666-6666-6666-666666666666
+
+### 예약일은 반드시 오늘 이후 날짜로 맞춰서 사용
+@reservedDate = 2026-06-01
+@slotStartTime = 18:00:00
+
+
+### 0-1. OWNER 로그인
+POST {{gatewayUrl}}/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "loginId": "{{ownerLoginId}}",
+  "password": "{{ownerPassword}}"
+}
+
+> {%
+    client.global.clear("ownerToken");
+    client.global.clear("ownerId");
+
+    let token = null;
+
+    if (response.body.data && response.body.data.accessToken) {
+        token = response.body.data.accessToken;
+    } else if (response.body.accessToken) {
+        token = response.body.accessToken;
+    }
+
+    if (!token) {
+        throw new Error("OWNER accessToken을 찾지 못했습니다.");
+    }
+
+    client.global.set("ownerToken", token);
+    client.log("ownerToken saved length = " + token.length);
+
+    let payloadBase64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+    payloadBase64 += "=".repeat((4 - payloadBase64.length % 4) % 4);
+
+    const payload = JSON.parse(atob(payloadBase64));
+
+    client.global.set("ownerId", payload["sub"]);
+    client.log("ownerId saved = " + payload["sub"]);
+    client.log("owner role = " + payload["role"]);
+%}
+
+
+### 0-2. USER 로그인
+POST {{gatewayUrl}}/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "loginId": "{{userLoginId}}",
+  "password": "{{userPassword}}"
+}
+
+> {%
+    client.global.clear("userToken");
+    client.global.clear("userId");
+
+    let token = null;
+
+    if (response.body.data && response.body.data.accessToken) {
+        token = response.body.data.accessToken;
+    } else if (response.body.accessToken) {
+        token = response.body.accessToken;
+    }
+
+    if (!token) {
+        throw new Error("USER accessToken을 찾지 못했습니다.");
+    }
+
+    client.global.set("userToken", token);
+
+    let payloadBase64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+    payloadBase64 += "=".repeat((4 - payloadBase64.length % 4) % 4);
+
+    const payload = JSON.parse(atob(payloadBase64));
+
+    client.global.set("userId", payload.sub);
+    client.log("userId saved = " + payload.sub);
+%}
+
+
+### 식당 등록
+POST {{gatewayUrl}}/api/v1/restaurants
+Content-Type: application/json
+Authorization: Bearer {{ownerToken}}
+
+{
+  "name": "MicheLet CheckIn Test",
+  "address": "서울특별시 강남구 테헤란로 123",
+  "phone": "02-1234-5678",
+  "description": "체크인 테스트용 레스토랑",
+  "reservationOpenAt": "10:00:00",
+  "avgMealDurationMin": 90,
+  "status": "OPEN",
+  "businessHours": "MON-FRI 11:00-20:00 / SAT,SUN CLOSED"
+}
+
+> {%
+    client.global.clear("restaurantId");
+
+    if (response.status === 200 && response.body.data) {
+        client.global.set("restaurantId", response.body.data.restaurantId);
+        client.log("restaurantId saved = " + response.body.data.restaurantId);
+    } else {
+        client.log(JSON.stringify(response.body, null, 2));
+        throw new Error("식당 등록 실패");
+    }
+%}
+
+
+### 2. 코스 등록
+### OWNER 토큰으로 Gateway 경유
+POST {{gatewayUrl}}/api/v1/restaurants/{{restaurantId}}/courses
+Content-Type: application/json
+Authorization: Bearer {{ownerToken}}
+
+{
+  "name": "Dinner Course",
+  "price": 150000,
+  "sessionType": "DINNER",
+  "status": "AVAILABLE",
+  "menus": [
+    {
+      "coursePart": "AMUSE_BOUCHE",
+      "menuName": "한우 타르타르",
+      "sortOrder": 1
+    },
+    {
+      "coursePart": "APPETIZER",
+      "menuName": "제철 샐러드",
+      "sortOrder": 2
+    },
+    {
+      "coursePart": "FISH",
+      "menuName": "제철 생선 구이",
+      "sortOrder": 3
+    },
+    {
+      "coursePart": "MAIN",
+      "menuName": "양갈비",
+      "sortOrder": 4
+    },
+    {
+      "coursePart": "DESSERT",
+      "menuName": "바닐라 무스",
+      "sortOrder": 5
+    }
+  ]
+}
+
+> {%
+    client.global.clear("courseId");
+
+    if (response.status === 200 && response.body.data) {
+        client.global.set("courseId", response.body.data.courseId);
+        client.log("courseId saved = " + response.body.data.courseId);
+    } else {
+        client.log(JSON.stringify(response.body, null, 2));
+        throw new Error("코스 등록 실패");
+    }
+%}
+
+
+### 3. 예약 생성
+### USER 권한 필요
+### 외부 API이므로 Gateway 경유
+### reservation-service 기준 X-Waiting-Token 형식: userId:restaurantId
+### timeSlotId는 중복 예약 방지를 위해 매 요청마다 동적 UUID 사용
+POST {{gatewayUrl}}/api/v1/reservations
+Content-Type: application/json
+Authorization: Bearer {{userToken}}
+X-Waiting-Token: {{userId}}:{{restaurantId}}
+
+{
+  "restaurantId": "{{restaurantId}}",
+  "timeSlotId": "{{$uuid}}",
+  "reservedDate": "{{reservedDate}}",
+  "slotStartTime": "{{slotStartTime}}",
+  "guestCount": 2,
+  "courses": [
+    {
+      "courseId": "{{courseId}}",
+      "quantity": 1,
+      "unitPrice": 150000
+    }
+  ]
+}
+
+> {%
+    client.global.clear("reservationId");
+
+    if ((response.status === 200 || response.status === 201) && response.body.data) {
+        client.global.set("reservationId", response.body.data.reservationId);
+        client.log("reservationId saved = " + response.body.data.reservationId);
+    } else {
+        client.log(JSON.stringify(response.body, null, 2));
+        throw new Error("예약 생성 실패");
+    }
+%}
+
+
+### 4. 예약 상세 조회 - 체크인 전 상태 확인
+GET {{gatewayUrl}}/api/v1/reservations/{{reservationId}}
+Authorization: Bearer {{userToken}}
+
+
+### 5. 체크인 처리
+### OWNER 토큰으로 Gateway 경유
+### 외부 API이므로 Gateway 경유
+PATCH {{gatewayUrl}}/api/v1/restaurants/{{restaurantId}}/reservations/{{reservationId}}/check-in
+Authorization: Bearer {{ownerToken}}
+
+> {%
+    client.log("체크인 처리 응답");
+    client.log(JSON.stringify(response.body, null, 2));
+
+    if (response.status !== 200) {
+        throw new Error("체크인 처리 실패");
+    }
+
+    if (!response.body.success) {
+        throw new Error("체크인 처리 success=false");
+    }
+%}
+
+
+### 6. 체크인 후 예약 상세 조회 - status COMPLETED 확인
+GET {{gatewayUrl}}/api/v1/reservations/{{reservationId}}
+Authorization: Bearer {{userToken}}
+
+
+### 7. 같은 예약 재체크인 - 중복 체크인 실패 확인
+PATCH {{gatewayUrl}}/api/v1/restaurants/{{restaurantId}}/reservations/{{reservationId}}/check-in
+Authorization: Bearer {{ownerToken}}
+
+> {%
+    client.log("중복 체크인 응답");
+    client.log(JSON.stringify(response.body, null, 2));
+%}
+
+
+### 8. USER 토큰으로 체크인 시도 - 권한 실패 확인
+PATCH {{gatewayUrl}}/api/v1/restaurants/{{restaurantId}}/reservations/{{reservationId}}/check-in
+Authorization: Bearer {{userToken}}
+
+> {%
+    client.log("USER 체크인 시도 응답");
+    client.log(JSON.stringify(response.body, null, 2));
+%}
+
+
+### 9. 존재하지 않는 식당 체크인 - 404 확인
+PATCH {{gatewayUrl}}/api/v1/restaurants/00000000-0000-0000-0000-000000000000/reservations/{{reservationId}}/check-in
+Authorization: Bearer {{ownerToken}}
+
+> {%
+    client.log("존재하지 않는 식당 체크인 응답");
+    client.log(JSON.stringify(response.body, null, 2));
+%}
