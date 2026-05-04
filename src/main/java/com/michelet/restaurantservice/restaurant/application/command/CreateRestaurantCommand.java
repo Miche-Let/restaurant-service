@@ -1,7 +1,7 @@
-package com.michelet.restaurant.application.command;
+package com.michelet.restaurantservice.restaurant.application.command;
 
-import com.michelet.restaurant.domain.model.RestaurantStatus;
-import com.michelet.restaurant.presentation.dto.CreateRestaurantRequest;
+import com.michelet.restaurantservice.restaurant.domain.model.RestaurantStatus;
+import com.michelet.restaurantservice.presentation.dto.CreateRestaurantRequest;
 
 import java.time.LocalTime;
 import java.util.UUID;

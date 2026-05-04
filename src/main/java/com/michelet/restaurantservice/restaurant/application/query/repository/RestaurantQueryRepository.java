@@ -1,7 +1,7 @@
-package com.michelet.restaurant.application.query.repository;
+package com.michelet.restaurantservice.restaurant.application.query.repository;
 
-import com.michelet.restaurant.application.query.RestaurantSearchCondition;
-import com.michelet.restaurant.application.result.RestaurantSummaryResult;
+import com.michelet.restaurantservice.restaurant.application.query.RestaurantSearchCondition;
+import com.michelet.restaurantservice.restaurant.application.result.RestaurantSummaryResult;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

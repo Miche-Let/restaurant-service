@@ -1,6 +1,6 @@
-package com.michelet.restaurant.application.query;
+package com.michelet.restaurantservice.restaurant.application.query;
 
-import com.michelet.restaurant.domain.model.RestaurantStatus;
+import com.michelet.restaurantservice.restaurant.domain.model.RestaurantStatus;
 
 /**
  * 식당 목록/검색 조회 조건 객체

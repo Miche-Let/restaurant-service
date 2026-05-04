@@ -1,6 +1,6 @@
-package com.michelet.restaurant.application.result;
+package com.michelet.restaurantservice.restaurant.application.result;
 
-import com.michelet.restaurant.domain.model.Restaurant;
+import com.michelet.restaurantservice.restaurant.domain.model.Restaurant;
 
 import java.util.UUID;
 

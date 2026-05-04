@@ -1,15 +1,15 @@
-package com.michelet.restaurant.application.service.query;
+package com.michelet.restaurantservice.restaurant.application.service;
 
-import com.michelet.restaurant.application.query.RestaurantSearchCondition;
-import com.michelet.restaurant.application.query.repository.RestaurantQueryRepository;
-import com.michelet.restaurant.application.result.CourseSummaryResult;
-import com.michelet.restaurant.application.result.GetRestaurantResult;
-import com.michelet.restaurant.application.result.RestaurantSummaryResult;
-import com.michelet.restaurant.domain.exception.RestaurantErrorCode;
-import com.michelet.restaurant.domain.exception.RestaurantException;
-import com.michelet.restaurant.domain.model.Restaurant;
-import com.michelet.restaurant.domain.repository.RestaurantCourseRepository;
-import com.michelet.restaurant.domain.repository.RestaurantRepository;
+import com.michelet.restaurantservice.restaurant.application.query.RestaurantSearchCondition;
+import com.michelet.restaurantservice.restaurant.application.query.repository.RestaurantQueryRepository;
+import com.michelet.restaurantservice.course.application.result.CourseSummaryResult;
+import com.michelet.restaurantservice.restaurant.application.result.GetRestaurantResult;
+import com.michelet.restaurantservice.restaurant.application.result.RestaurantSummaryResult;
+import com.michelet.restaurantservice.restaurant.domain.exception.RestaurantErrorCode;
+import com.michelet.restaurantservice.restaurant.domain.exception.RestaurantException;
+import com.michelet.restaurantservice.restaurant.domain.model.Restaurant;
+import com.michelet.restaurantservice.course.domain.repository.RestaurantCourseRepository;
+import com.michelet.restaurantservice.restaurant.domain.repository.RestaurantRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;

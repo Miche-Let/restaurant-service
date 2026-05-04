@@ -1,9 +1,9 @@
-package com.michelet.restaurant.application.service.command;
+package com.michelet.restaurantservice.restaurant.application.service;
 
-import com.michelet.restaurant.application.command.CreateRestaurantCommand;
-import com.michelet.restaurant.application.result.CreateRestaurantResult;
-import com.michelet.restaurant.domain.model.Restaurant;
-import com.michelet.restaurant.domain.repository.RestaurantRepository;
+import com.michelet.restaurantservice.restaurant.application.command.CreateRestaurantCommand;
+import com.michelet.restaurantservice.restaurant.application.result.CreateRestaurantResult;
+import com.michelet.restaurantservice.restaurant.domain.model.Restaurant;
+import com.michelet.restaurantservice.restaurant.domain.repository.RestaurantRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
