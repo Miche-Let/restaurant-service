@@ -1,7 +1,7 @@
-package com.michelet.restaurant.presentation.dto;
+package com.michelet.restaurantservice.restaurant.presentation.dto;
 
-import com.michelet.restaurant.application.result.RestaurantSummaryResult;
-import com.michelet.restaurant.domain.model.RestaurantStatus;
+import com.michelet.restaurantservice.restaurant.application.result.RestaurantSummaryResult;
+import com.michelet.restaurantservice.restaurant.domain.model.RestaurantStatus;
 
 import java.util.UUID;
 

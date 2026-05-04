@@ -1,7 +1,7 @@
-package com.michelet.restaurant.presentation.dto;
+package com.michelet.restaurantservice.restaurant.presentation.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.michelet.restaurant.domain.model.RestaurantStatus;
+import com.michelet.restaurantservice.restaurant.domain.model.RestaurantStatus;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

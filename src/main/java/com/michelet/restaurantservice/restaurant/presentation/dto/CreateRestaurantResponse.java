@@ -1,4 +1,4 @@
-package com.michelet.restaurant.presentation.dto;
+package com.michelet.restaurantservice.restaurant.presentation.dto;
 
 import java.util.UUID;
 

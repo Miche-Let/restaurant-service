@@ -1,9 +1,9 @@
-package com.michelet.restaurant.presentation.controller.internal;
+package com.michelet.restaurantservice.restaurant.presentation.controller.internal;
 
 import com.michelet.common.response.ApiResponse;
-import com.michelet.restaurant.application.result.GetRestaurantResult;
-import com.michelet.restaurant.application.service.query.RestaurantQueryService;
-import com.michelet.restaurant.presentation.dto.GetInternalRestaurantResponse;
+import com.michelet.restaurantservice.restaurant.application.result.GetRestaurantResult;
+import com.michelet.restaurantservice.restaurant.application.service.RestaurantQueryService;
+import com.michelet.restaurantservice.restaurant.presentation.dto.GetInternalRestaurantResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
