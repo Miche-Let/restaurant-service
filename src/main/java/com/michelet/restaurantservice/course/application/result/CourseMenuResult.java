@@ -1,7 +1,7 @@
-package com.michelet.restaurant.application.result;
+package com.michelet.restaurantservice.course.application.result;
 
-import com.michelet.restaurant.domain.model.CoursePart;
-import com.michelet.restaurant.domain.model.RestaurantCourseMenu;
+import com.michelet.restaurantservice.course.domain.model.CoursePart;
+import com.michelet.restaurantservice.course.domain.model.RestaurantCourseMenu;
 
 public record CourseMenuResult(
         CoursePart coursePart,

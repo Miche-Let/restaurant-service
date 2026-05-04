@@ -1,7 +1,7 @@
-package com.michelet.restaurant.application.command;
+package com.michelet.restaurantservice.course.application.command;
 
-import com.michelet.restaurant.domain.model.CoursePart;
-import com.michelet.restaurant.presentation.dto.CreateCourseMenuRequest;
+import com.michelet.restaurantservice.course.domain.model.CoursePart;
+import com.michelet.restaurantservice.presentation.dto.CreateCourseMenuRequest;
 
 public record CreateCourseMenuCommand(
 

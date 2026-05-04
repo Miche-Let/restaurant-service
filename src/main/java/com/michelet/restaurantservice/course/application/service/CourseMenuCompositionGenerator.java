@@ -1,6 +1,6 @@
-package com.michelet.restaurant.application.service.command;
+package com.michelet.restaurantservice.course.application.service;
 
-import com.michelet.restaurant.application.command.CreateCourseMenuCommand;
+import com.michelet.restaurantservice.course.application.command.CreateCourseMenuCommand;
 
 import java.util.List;
 import java.util.stream.Collectors;
