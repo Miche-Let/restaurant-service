@@ -1,4 +1,4 @@
-package com.michelet.restaurant.domain.model;
+package com.michelet.restaurantservice.checkin.domain.model;
 
 import com.michelet.common.entity.BaseEntity;
 import jakarta.persistence.Access;

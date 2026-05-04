@@ -1,6 +1,6 @@
-package com.michelet.restaurant.domain.repository;
+package com.michelet.restaurantservice.checkin.domain.repository;
 
-import com.michelet.restaurant.domain.model.RestaurantCheckInLog;
+import com.michelet.restaurantservice.checkin.domain.model.RestaurantCheckInLog;
 
 public interface RestaurantCheckInLogRepository {
 

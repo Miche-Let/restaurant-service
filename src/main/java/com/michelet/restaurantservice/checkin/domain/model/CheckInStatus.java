@@ -1,4 +1,4 @@
-package com.michelet.restaurant.domain.model;
+package com.michelet.restaurantservice.checkin.domain.model;
 
 // 식당 체크인 이력 상태 표현
 public enum CheckInStatus {
