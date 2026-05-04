@@ -97,6 +97,8 @@ public class RestaurantCheckInCommandService {
             throw new CheckInException(CheckInErrorCode.CHECKIN_400_RESERVATION_CHECK_IN_FAILED);
         } catch (FeignException.Conflict exception) {
             throw new CheckInException(CheckInErrorCode.CHECKIN_409_RESERVATION_CHECK_IN_FAILED);
+        } catch (FeignException exception) {
+            throw new CheckInException(CheckInErrorCode.CHECKIN_502_INVALID_RESERVATION_RESPONSE);
         }
     }
 
