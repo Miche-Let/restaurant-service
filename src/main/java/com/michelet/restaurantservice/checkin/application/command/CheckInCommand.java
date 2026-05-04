@@ -1,4 +1,4 @@
-package com.michelet.restaurant.application.command;
+package com.michelet.restaurantservice.checkin.application.command;
 
 import com.michelet.common.auth.core.enums.UserRole;
 
