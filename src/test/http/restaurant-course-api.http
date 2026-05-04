@@ -7,12 +7,10 @@
 @restaurantExternalUrl = http://localhost:19000
 
 ### 내부 API는 restaurant-service 직접 호출
-### 내부 API는 @RequireRole 적용 대상 아님
 @restaurantInternalUrl = http://localhost:19300
 
 
 ### 테스트 OWNER 계정
-### 중복 에러가 나면 001 숫자만 바꿔서 다시 실행
 @ownerLoginId = test9
 @ownerPassword = test123!
 @ownerName = owner9
@@ -21,7 +19,6 @@
 
 
 ### 테스트 USER 계정
-### 중복 에러가 나면 001 숫자만 바꿔서 다시 실행
 @userLoginId = test8
 @userPassword = test123!
 @userName = user8
