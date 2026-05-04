@@ -1,11 +1,11 @@
-package com.michelet.restaurant.domain.model;
+package com.michelet.restaurantservice.restaurant.domain.model;
 
 import com.michelet.common.entity.BaseEntity;
-import com.michelet.restaurant.domain.model.vo.BusinessHours;
-import com.michelet.restaurant.domain.model.vo.ReservationOpenAt;
-import com.michelet.restaurant.domain.model.vo.RestaurantAddress;
-import com.michelet.restaurant.domain.model.vo.RestaurantName;
-import com.michelet.restaurant.domain.model.vo.RestaurantPhone;
+import com.michelet.restaurantservice.restaurant.domain.model.vo.BusinessHours;
+import com.michelet.restaurantservice.restaurant.domain.model.vo.ReservationOpenAt;
+import com.michelet.restaurantservice.restaurant.domain.model.vo.RestaurantAddress;
+import com.michelet.restaurantservice.restaurant.domain.model.vo.RestaurantName;
+import com.michelet.restaurantservice.restaurant.domain.model.vo.RestaurantPhone;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

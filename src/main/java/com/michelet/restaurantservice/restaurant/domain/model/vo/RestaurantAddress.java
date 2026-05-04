@@ -1,4 +1,4 @@
-package com.michelet.restaurant.domain.model.vo;
+package com.michelet.restaurantservice.restaurant.domain.model.vo;
 
 public record RestaurantAddress(String value) {
 

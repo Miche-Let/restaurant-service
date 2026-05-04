@@ -1,4 +1,4 @@
-package com.michelet.restaurant.domain.exception;
+package com.michelet.restaurantservice.restaurant.domain.exception;
 
 import com.michelet.common.exception.BusinessException;
 
