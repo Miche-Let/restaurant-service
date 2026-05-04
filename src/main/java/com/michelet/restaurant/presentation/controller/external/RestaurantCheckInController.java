@@ -32,7 +32,7 @@ public class RestaurantCheckInController {
     @PatchMapping("/{restaurantId}/reservations/{reservationId}/check-in")
     public ApiResponse<CheckInResponse> checkIn(@PathVariable UUID restaurantId, @PathVariable UUID reservationId) {
 
-        UserContext userContext = UserContextHolder.get();
+        UserContext userContext = getAuthenticatedUserContext();
 
         CheckInCommand command = CheckInCommand.of(
                 restaurantId,
@@ -44,6 +44,16 @@ public class RestaurantCheckInController {
         CheckInResult result = restaurantCheckInCommandService.checkIn(command);
 
         return ApiResponse.ok(CheckInResponse.from(result));
+    }
+
+    private UserContext getAuthenticatedUserContext() {
+        UserContext userContext = UserContextHolder.get();
+
+        if (userContext == null) {
+            throw new RestaurantException(RestaurantErrorCode.RESTAURANT_401_INVALID_AUTH_USER_ID);
+        }
+
+        return userContext;
     }
 
     private UUID parseAuthenticatedUserId(String userId) {
