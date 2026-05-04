@@ -1,16 +1,16 @@
-package com.michelet.restaurant.presentation.controller.external;
+package com.michelet.restaurantservice.checkin.presentation.controller.external;
 
 import com.michelet.common.auth.core.annotation.RequireRole;
 import com.michelet.common.auth.core.context.UserContext;
 import com.michelet.common.auth.core.enums.UserRole;
 import com.michelet.common.auth.webmvc.context.UserContextHolder;
 import com.michelet.common.response.ApiResponse;
-import com.michelet.restaurant.application.command.CheckInCommand;
-import com.michelet.restaurant.application.result.CheckInResult;
-import com.michelet.restaurant.application.service.command.RestaurantCheckInCommandService;
-import com.michelet.restaurant.domain.exception.RestaurantErrorCode;
-import com.michelet.restaurant.domain.exception.RestaurantException;
-import com.michelet.restaurant.presentation.dto.CheckInResponse;
+import com.michelet.restaurantservice.checkin.application.command.CheckInCommand;
+import com.michelet.restaurantservice.checkin.application.result.CheckInResult;
+import com.michelet.restaurantservice.checkin.application.service.RestaurantCheckInCommandService;
+import com.michelet.restaurantservice.domain.exception.RestaurantErrorCode;
+import com.michelet.restaurantservice.domain.exception.RestaurantException;
+import com.michelet.restaurantservice.checkin.presentation.dto.CheckInResponse;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;

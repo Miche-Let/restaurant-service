@@ -1,7 +1,7 @@
-package com.michelet.restaurant.presentation.dto;
+package com.michelet.restaurantservice.checkin.presentation.dto;
 
-import com.michelet.restaurant.application.result.CheckInResult;
-import com.michelet.restaurant.domain.model.CheckInStatus;
+import com.michelet.restaurantservice.checkin.application.result.CheckInResult;
+import com.michelet.restaurantservice.checkin.domain.model.CheckInStatus;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
