@@ -8,10 +8,18 @@ spring:
         max-page-size: 50
 
 server:
-  port: 19300
+  port: ${SERVER_PORT:19300}
 
 management:
   endpoints:
     web:
       exposure:
         include: health,info
+
+internal:
+  auth:
+    secret: ${INTERNAL_AUTH_SECRET}
+
+feign:
+  reservation-service:
+    url: ${FEIGN_RESERVATION_SERVICE_URL:}
