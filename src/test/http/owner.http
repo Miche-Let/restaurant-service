@@ -1,0 +1,403 @@
+owner.http
+### 공통 변수
+### 인증/회원가입/로그인은 Gateway 경유
+@gatewayUrl = http://localhost:19000
+
+### 외부 API는 Gateway 경유
+### @RequireRole이 붙은 API는 Gateway를 통해 인증 컨텍스트가 전달되어야 함
+@catalogUrl = http://localhost:19800
+@inventoryUrl = http://localhost:19900
+@orderUrl = http://localhost:19700
+
+### 테스트 OWNER 계정
+@ownerLoginId = test90212
+@ownerPassword = test123!0212
+@ownerName = owner90212
+@ownerEmail = owner0090212@naver.com
+@ownerPhone = 010-0000-1013
+
+
+### 1. OWNER 회원가입
+### 식당 등록 / 코스 등록 테스트용 OWNER 계정 생성
+POST {{gatewayUrl}}/api/v1/users/signup
+Content-Type: application/json
+
+{
+  "loginId": "{{ownerLoginId}}",
+  "password": "{{ownerPassword}}",
+  "name": "{{ownerName}}",
+  "email": "{{ownerEmail}}",
+  "phone": "{{ownerPhone}}",
+  "userRole": "OWNER"
+}
+
+
+### 2. OWNER 로그인
+### 식당 등록 / 코스 등록에 사용할 OWNER 토큰 발급
+POST {{gatewayUrl}}/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "loginId": "{{ownerLoginId}}",
+  "password": "{{ownerPassword}}"
+}
+> {%
+    client.global.clear("ownerToken");
+
+    let token = null;
+
+    if (response.body.data && response.body.data.accessToken) {
+        token = response.body.data.accessToken;
+    } else if (response.body.data && response.body.data.token) {
+        token = response.body.data.token;
+    } else if (response.body.accessToken) {
+        token = response.body.accessToken;
+    } else if (response.body.token) {
+        token = response.body.token;
+    }
+
+    if (token) {
+        client.global.set("ownerToken", token);
+    }
+%}
+
+
+### 3. 식당 등록
+POST {{gatewayUrl}}/api/v1/restaurants
+Content-Type: application/json
+Authorization: Bearer {{ownerToken}}
+
+{
+  "name": "MicheLet Dining 3",
+  "address": "서울특별시 강남구 테헤란로 123",
+  "phone": "02-1234-5678",
+  "description": "파인다이닝 레스토랑",
+  "reservationOpenAt": "10:00:00",
+  "avgMealDurationMin": 90,
+  "status": "OPEN",
+  "businessHours": "MON-FRI 11:00-20:00 / SAT,SUN CLOSED"
+}
+> {%
+    client.global.clear("restaurantId");
+
+    if (response.body.data && response.body.data.restaurantId) {
+        client.global.set("restaurantId", response.body.data.restaurantId);
+        client.log("Saved restaurantId: " + response.body.data.restaurantId);
+    }
+%}
+
+### 4. 코스 등록
+POST {{gatewayUrl}}/api/v1/restaurants/{{restaurantId}}/courses
+Content-Type: application/json
+Authorization: Bearer {{ownerToken}}
+
+{
+  "name": "Dinner Course",
+  "price": 150000,
+  "sessionType": "DINNER",
+  "status": "AVAILABLE",
+  "menus": [
+    {
+      "coursePart": "MAIN",
+      "menuName": "양갈비",
+      "sortOrder": 4
+    },
+    {
+      "coursePart": "AMUSE_BOUCHE",
+      "menuName": "한우 타르타르",
+      "sortOrder": 1
+    },
+    {
+      "coursePart": "APPETIZER",
+      "menuName": "제철 샐러드",
+      "sortOrder": 2
+    },
+    {
+      "coursePart": "FISH",
+      "menuName": "제철 생선 구이",
+      "sortOrder": 3
+    },
+    {
+      "coursePart": "DESSERT",
+      "menuName": "바닐라 무스",
+      "sortOrder": 5
+    }
+  ]
+}
+
+
+### 5. 타임슬롯 일괄 생성
+POST {{gatewayUrl}}/api/v1/restaurants/{{restaurantId}}/time-slots/bulk
+Content-Type: application/json
+Authorization: Bearer {{ownerToken}}
+
+{
+  "startDate": "2026-05-15",
+  "endDate": "2026-05-15",
+  "openTime": "13:00:00",
+  "closeTime": "14:00:00",
+  "intervalMinutes": 30,
+  "capacity": 4
+}
+
+### 6. 상품 등록
+POST http://localhost:19800/api/v1/products
+Content-Type: application/json
+Authorization: Bearer {{ownerToken}}
+
+{
+  "restaurantId": "{{restaurantId}}",
+  "name": "미슐랭 3스타 시그니처 코스",
+  "category": "MEALKIT",
+  "basePrice": 150000,
+  "attributes": {
+    "origin": "국내산"
+  },
+  "exhibition": {
+    "startAt": "2024-01-01T00:00:00",
+    "endAt": "2099-12-31T23:59:59"
+  },
+  "options": [
+    {
+      "name": "와인 페어링 추가",
+      "addPrice": 50000,
+      "totalQuantity": 100,
+      "dailyLimit": 20,
+      "maxLimit": 5
+    }
+  ]
+}
+
+> {%
+    client.log("상품 등록 restaurantId = " + client.global.get("restaurantId"));
+    client.log("ownerToken exists = " + (client.global.get("ownerToken") !== null));
+
+    client.test("상품 등록 성공", function () {
+        client.assert(response.status === 200 || response.status === 201,
+            "상품 등록 실패: " + response.status);
+    });
+
+    if (response.body && response.body.data) {
+        var data = response.body.data;
+        client.global.set("shared_product_id", data.productId);
+        client.global.set("shared_option_id", data.options[0].optionId);
+        client.log("shared_product_id = " + data.productId);
+        client.log("shared_option_id = " + data.options[0].optionId);
+    }
+%}
+
+### 7. 전시 스케줄러 테스트용 '기간 만료' 상품 등록
+POST {{gatewayUrl}}/api/v1/products
+Content-Type: application/json
+Authorization: Bearer {{ownerToken}}
+
+{
+  "restaurantId": "{{restaurantId}}",
+  "name": "기간 만료 코스 (전시 스케줄러 테스트용)",
+  "category": "MEALKIT",
+  "basePrice": 100000,
+  "attributes": {},
+  "exhibition": {
+    "startAt": "2020-01-01T00:00:00",
+    "endAt": "2023-12-31T23:59:59"
+  },
+  "options": [
+    {
+      "name": "기본",
+      "addPrice": 0,
+      "totalQuantity": 100,
+      "dailyLimit": 20,
+      "maxLimit": 5
+    }
+  ]
+}
+
+> {%
+    client.test("기간 만료 상품 등록 확인", function () {
+        var data = response.body.data;
+        client.global.set("expired_product_id", data.productId);
+    });
+%}
+
+### 8. 재고 소진 테스트용 상품 등록
+POST {{gatewayUrl}}/api/v1/products
+Content-Type: application/json
+Authorization: Bearer {{ownerToken}}
+
+{
+  "restaurantId": "{{restaurantId}}",
+  "name": "품절 임박 리셋 테스트 코스",
+  "category": "MEALKIT",
+  "basePrice": 50000,
+  "attributes": {},
+  "exhibition": {
+    "startAt": "2024-01-01T00:00:00",
+    "endAt": "2099-12-31T23:59:59"
+  },
+  "options": [
+    {
+      "name": "한정판 옵션",
+      "addPrice": 0,
+      "totalQuantity": 25,
+      "dailyLimit": 20,
+      "maxLimit": 20
+    }
+  ]
+}
+
+> {%
+    client.test("테스트용 상품 등록 성공", function () {
+        var data = response.body.data;
+        client.global.set("depletion_product_id", data.productId);
+        client.global.set("depletion_option_id", data.options[0].optionId);
+    });
+%}
+
+### 9. 식당용 상품 등록 (오더 테스트용 멀티 옵션)
+POST {{gatewayUrl}}/api/v1/products
+Content-Type: application/json
+Authorization: Bearer {{ownerToken}}
+
+{
+  "restaurantId": "{{restaurantId}}",
+  "name": "오더용 미슐랭 예약 한정 코스",
+  "category": "MEALKIT",
+  "basePrice": 100000,
+  "attributes": {},
+  "exhibition": {
+    "startAt": "2024-01-01T00:00:00",
+    "endAt": "2099-12-31T23:59:59"
+  },
+  "options": [
+    {
+      "name": "미슐랭 스페셜 코스",
+      "addPrice": 0,
+      "totalQuantity": 50,
+      "dailyLimit": 10,
+      "maxLimit": 4
+    },
+    {
+      "name": "추가 와인 페어링",
+      "addPrice": 50000,
+      "totalQuantity": 50,
+      "dailyLimit": 10,
+      "maxLimit": 4
+    }
+  ]
+}
+
+> {%
+    client.test("오더용 상품 등록 성공", function () {
+        var data = response.body.data;
+        client.global.set("product_id", data.productId);
+        client.global.set("option_id_1", data.options[0].optionId);
+        client.global.set("option_id_2", data.options[1].optionId);
+    });
+%}
+
+### 10. 물품 단건 상세 조회
+GET {{gatewayUrl}}/api/v1/products/{{shared_product_id}}
+Accept: application/json
+Authorization: Bearer {{ownerToken}}
+
+> {%
+    client.test("상세 조회 확인", function () {
+        client.assert(response.status === 200, "상세 조회 실패");
+    });
+%}
+
+### 0. 내부 API용 공통 테스트 JWT 토큰 발급 (카탈로그용)
+GET {{orderUrl}}/test/internal-token?audience=catalog-service
+
+> {%
+    client.test("내부 토큰 획득 성공", function () {
+        client.assert(response.status === 200, "내부 토큰 발급 실패");
+        client.global.set("internal_token", response.body);
+    });
+%}
+
+### 11. 옵션 검증 단건 유효성 및 가격 검증 API (Internal)
+GET {{catalogUrl}}/internal/options/{{shared_option_id}}/validate
+Accept: application/json
+X-Internal-Token: {{internal_token}}
+
+> {%
+    client.test("옵션 검증 및 가격 합산 로직 확인", function () {
+        client.assert(response.status === 200, "옵션 검증 API 호출 실패");
+        client.assert(response.body.data.totalPrice === 150000, "가격 합산 오류");
+    });
+%}
+
+### 0. 내부 API용 공통 테스트 JWT 토큰 발급 (인벤토리용)
+GET {{orderUrl}}/test/internal-token?audience=inventory-service
+
+> {%
+    client.test("내부 토큰 획득 성공", function () {
+        client.assert(response.status === 200, "내부 토큰 발급 실패");
+        client.global.set("internal_token", response.body);
+    });
+%}
+
+### 12. 정시 전시 상태 강제 갱신 트리거 (Internal) - user.http의 "12. 기간 만료 상품 단건 조회" 직전에 실행
+POST {{inventoryUrl}}/internal/scheduler/trigger-exhibition
+Content-Type: application/json
+X-Internal-Token: {{internal_token}}
+
+### 13. 일일 재고 강제 리셋 트리거 (Internal) - user.http의 "13. 정상 상품 단건 조회" 직전에 실행
+POST {{inventoryUrl}}/internal/scheduler/trigger-stock
+Content-Type: application/json
+X-Internal-Token: {{internal_token}}
+
+### 14. 대량 재고 구매 (총 재고 25개 중 20개 소진 -> 5개 남음)
+POST {{inventoryUrl}}/internal/stocks/reserve
+Content-Type: application/json
+X-Internal-Token: {{internal_token}}
+
+{
+  "optionId": "{{depletion_option_id}}",
+  "quantity": 20
+}
+
+### 15. 자정이 되었다고 가정하고 스케줄러 트리거 재실행 (Internal)
+POST {{inventoryUrl}}/internal/scheduler/trigger-stock
+Content-Type: application/json
+X-Internal-Token: {{internal_token}}
+
+### 16. 남은 재고 모두 구매 (총 재고 0 달성 -> SOLDOUT 전이 트리거)
+POST {{inventoryUrl}}/internal/stocks/reserve
+Content-Type: application/json
+X-Internal-Token: {{internal_token}}
+
+{
+  "optionId": "{{depletion_option_id}}",
+  "quantity": 5
+}
+
+### 17. 물품 단건 상세 조회 및 카프카 데이터 동기화 확인 - 재고소진확인용
+GET {{gatewayUrl}}/api/v1/products/{{depletion_product_id}}
+Accept: application/json
+Authorization: Bearer {{ownerToken}}
+
+> {%
+    client.test("상세 조회 확인", function () {
+        client.assert(response.status === 200, "상세 조회 실패");
+    });
+%}
+
+### 18. 상품 정보 수정 (PATCH)
+PATCH {{gatewayUrl}}/api/v1/products/{{shared_product_id}}
+Content-Type: application/json
+Authorization: Bearer {{ownerToken}}
+
+{
+  "name": "수정된 미슐랭 코스",
+  "category": "EVENT",
+  "basePrice": 99000,
+  "attributes": {
+    "origin": "수정된 국내산"
+  }
+}
+
+### 19. 상품 삭제 (Soft Delete)
+DELETE {{gatewayUrl}}/api/v1/products/{{shared_product_id}}
+Authorization: Bearer {{ownerToken}}
