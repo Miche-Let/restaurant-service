@@ -41,7 +41,7 @@ dependencies {
     implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'
     implementation 'com.github.Miche-Let:common:dev-SNAPSHOT'
     implementation 'io.github.openfeign:feign-hc5'
-    implementation 'com.github.Miche-Let:common-auth-feign:0.1.1'
+    implementation 'com.github.Miche-Let:common-auth-feign:0.1.2'
     implementation 'com.github.Miche-Let:common-auth-webmvc:0.1.5'
 
     runtimeOnly 'org.postgresql:postgresql'

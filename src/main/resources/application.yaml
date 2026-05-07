@@ -20,6 +20,9 @@ internal:
   auth:
     secret: ${INTERNAL_AUTH_SECRET}
 
+jwt:
+  secret: ${JWT_SECRET}
+
 feign:
   reservation-service:
     url: ${FEIGN_RESERVATION_SERVICE_URL:}
