@@ -51,6 +51,12 @@ Content-Type: application/json
 > {%
     client.test("점주 소유 식당이 없으면 404 응답", function () {
         client.assert(response.status === 404, "Expected 404 but got " + response.status);
+        client.assert(response.body !== undefined, "response body 없음");
+        client.assert(response.body.success === false, "success=false 여야 함");
+        client.assert(
+            response.body.code === "RESTAURANT_404_NOT_FOUND",
+            "Expected RESTAURANT_404_NOT_FOUND but got " + response.body.code
+        );
     });
 
     if (response.body) {
