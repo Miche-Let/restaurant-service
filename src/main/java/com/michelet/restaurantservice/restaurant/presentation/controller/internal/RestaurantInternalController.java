@@ -4,6 +4,7 @@ import com.michelet.common.response.ApiResponse;
 import com.michelet.restaurantservice.restaurant.application.result.GetRestaurantResult;
 import com.michelet.restaurantservice.restaurant.application.service.RestaurantQueryService;
 import com.michelet.restaurantservice.restaurant.presentation.dto.GetInternalRestaurantResponse;
+import com.michelet.restaurantservice.restaurant.presentation.dto.GetOwnerRestaurantIdResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,5 +33,12 @@ public class RestaurantInternalController {
         GetRestaurantResult result = restaurantQueryService.getRestaurant(restaurantId);
 
         return ApiResponse.ok(GetInternalRestaurantResponse.from(result));
+    }
+
+    @GetMapping("/owners/{ownerId}/id")
+    public ApiResponse<GetOwnerRestaurantIdResponse> getOwnerRestaurantId(@PathVariable UUID ownerId) {
+        UUID restaurantId = restaurantQueryService.getRestaurantIdByOwnerId(ownerId);
+
+        return ApiResponse.ok(GetOwnerRestaurantIdResponse.from(restaurantId));
     }
 }
