@@ -54,7 +54,7 @@ public class RestaurantQueryService {
 
     @Transactional(readOnly = true)
     public UUID getRestaurantIdByOwnerId(UUID ownerId) {
-        Restaurant restaurant = restaurantRepository.findFirstByOwnerIdAndDeletedAtIsNull(ownerId)
+        Restaurant restaurant = restaurantRepository.findByOwnerIdAndDeletedAtIsNull(ownerId)
                 .orElseThrow(() -> new RestaurantException(RestaurantErrorCode.RESTAURANT_404_NOT_FOUND));
 
         return restaurant.getRestaurantId();

@@ -11,5 +11,5 @@ public interface RestaurantJpaRepository extends JpaRepository<Restaurant, UUID>
 
     List<Restaurant> findAllByOwnerId(UUID ownerId);
 
-    Optional<Restaurant> findFirstByOwnerIdAndDeletedAtIsNull(UUID ownerId);
+    Optional<Restaurant> findByOwnerIdAndDeletedAtIsNull(UUID ownerId);
 }

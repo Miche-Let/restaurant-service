@@ -33,7 +33,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
     }
 
     @Override
-    public Optional<Restaurant> findFirstByOwnerIdAndDeletedAtIsNull(UUID ownerId) {
-        return restaurantJpaRepository.findFirstByOwnerIdAndDeletedAtIsNull(ownerId);
+    public Optional<Restaurant> findByOwnerIdAndDeletedAtIsNull(UUID ownerId) {
+        return restaurantJpaRepository.findByOwnerIdAndDeletedAtIsNull(ownerId);
     }
 }
