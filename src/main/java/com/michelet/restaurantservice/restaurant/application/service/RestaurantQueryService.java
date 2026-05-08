@@ -52,6 +52,14 @@ public class RestaurantQueryService {
         return GetRestaurantResult.of(restaurant, courses);
     }
 
+    @Transactional(readOnly = true)
+    public UUID getRestaurantIdByOwnerId(UUID ownerId) {
+        Restaurant restaurant = restaurantRepository.findFirstByOwnerIdAndDeletedAtIsNull(ownerId)
+                .orElseThrow(() -> new RestaurantException(RestaurantErrorCode.RESTAURANT_404_NOT_FOUND));
+
+        return restaurant.getRestaurantId();
+    }
+
     /**
      * 식당 목록/검색 결과를 페이지 단위로 조회
      *
