@@ -4,9 +4,12 @@ import com.michelet.restaurantservice.restaurant.domain.model.Restaurant;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface RestaurantJpaRepository extends JpaRepository<Restaurant, UUID> {
 
     List<Restaurant> findAllByOwnerId(UUID ownerId);
+
+    Optional<Restaurant> findFirstByOwnerIdAndDeletedAtIsNull(UUID ownerId);
 }

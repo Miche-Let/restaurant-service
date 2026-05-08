@@ -12,4 +12,6 @@ public interface RestaurantRepository {
     Optional<Restaurant> findById(UUID restaurantId);
 
     List<Restaurant> findAllByOwnerId(UUID ownerId);
+
+    Optional<Restaurant> findFirstByOwnerIdAndDeletedAtIsNull(UUID ownerId);
 }

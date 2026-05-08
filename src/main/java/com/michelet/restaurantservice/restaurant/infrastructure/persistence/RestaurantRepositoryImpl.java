@@ -31,4 +31,9 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
     public List<Restaurant> findAllByOwnerId(UUID ownerId) {
         return restaurantJpaRepository.findAllByOwnerId(ownerId);
     }
+
+    @Override
+    public Optional<Restaurant> findFirstByOwnerIdAndDeletedAtIsNull(UUID ownerId) {
+        return restaurantJpaRepository.findFirstByOwnerIdAndDeletedAtIsNull(ownerId);
+    }
 }
