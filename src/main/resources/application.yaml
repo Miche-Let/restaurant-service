@@ -1,11 +1,19 @@
 spring:
   application:
     name: restaurant-service
+
   data:
     web:
       pageable:
         default-page-size: 10
         max-page-size: 50
+
+  kafka:
+    consumer:
+      group-id: restaurant-service-check-in-consumer
+      auto-offset-reset: latest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
 server:
   port: ${SERVER_PORT:19300}
@@ -26,3 +34,7 @@ jwt:
 feign:
   reservation-service:
     url: ${FEIGN_RESERVATION_SERVICE_URL:}
+
+kafka:
+  topic:
+    reservation-check-in-completed: reservation.check-in.completed
