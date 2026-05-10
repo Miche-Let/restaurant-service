@@ -7,5 +7,6 @@ import java.util.UUID;
 
 public interface RestaurantCheckInLogJpaRepository extends JpaRepository<RestaurantCheckInLog, UUID> {
 
-    // 저장만 필요(JpaRepository가 이미 제공) 추후 추가
+    // reservationId 기준으로 체크인 로그 존재 여부 확인
+    boolean existsByReservationId(UUID reservationId);
 }
