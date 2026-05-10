@@ -33,7 +33,7 @@ jwt:
 
 feign:
   reservation-service:
-    url: ${FEIGN_RESERVATION_SERVICE_URL}
+    url: ${FEIGN_RESERVATION_SERVICE_URL:}
 
 kafka:
   topic:
