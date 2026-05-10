@@ -8,6 +8,7 @@ import com.michelet.restaurantservice.restaurant.domain.exception.RestaurantExce
 import com.michelet.restaurantservice.restaurant.domain.repository.RestaurantRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,10 +51,14 @@ public class CheckInCompletedEventHandler {
                 event.checkedInAt()
         );
 
-        restaurantCheckInLogRepository.save(checkInLog);
+        boolean saved = saveCheckInLog(checkInLog, event);
+
+        if (!saved) {
+            return;
+        }
 
         log.info(
-                "체크인 완료 이벤트 처리 완료 eventId={}, reservationId={}, restaurantId={}, checkedInBy={}, checkedInAt={}",
+                "체크인 완료 이벤트 처리를 완료했습니다. eventId={}, reservationId={}, restaurantId={}, checkedInBy={}, checkedInAt={}",
                 event.eventId(),
                 event.reservationId(),
                 event.restaurantId(),
@@ -86,14 +91,55 @@ public class CheckInCompletedEventHandler {
     }
 
     // 이벤트에 포함된 restaurantId가 restaurant-service에 존재하는 식당인지 확인
+
     private void validateRestaurantExists(CheckInCompletedEvent event) {
         restaurantRepository.findById(event.restaurantId())
                 .orElseThrow(() -> new RestaurantException(RestaurantErrorCode.RESTAURANT_404_NOT_FOUND));
     }
-
     private void validateRequired(Object value, String fieldName) {
         if (value == null) {
             throw new IllegalArgumentException("체크인 완료 이벤트 필수값이 누락되었습니다. field=" + fieldName);
         }
+    }
+
+    /**
+     * 체크인 로그를 저장
+     *
+     * existsByReservationId() 확인 이후 save() 사이에 동일 reservationId 이벤트가 동시에 처리될 수 있음
+     */
+    private boolean saveCheckInLog(RestaurantCheckInLog checkInLog, CheckInCompletedEvent event) {
+        try {
+            restaurantCheckInLogRepository.save(checkInLog);
+            return true;
+        } catch (DataIntegrityViolationException exception) {
+            if (isDuplicateReservationIdException(exception)) {
+                log.info(
+                        "동시에 처리된 중복 체크인 완료 이벤트를 스킵합니다. eventId={}, reservationId={}, restaurantId={}",
+                        event.eventId(),
+                        event.reservationId(),
+                        event.restaurantId()
+                );
+                return false;
+            }
+
+            throw exception;
+        }
+    }
+
+    // reservation_id unique constraint 위반 여부를 확인
+    private boolean isDuplicateReservationIdException(Throwable exception) {
+        Throwable current = exception;
+
+        while (current != null) {
+            String message = current.getMessage();
+
+            if (message != null && (message.contains("uk_checkin_log_reservation_id") || message.contains("reservation_id"))) {
+                return true;
+            }
+
+            current = current.getCause();
+        }
+
+        return false;
     }
 }
