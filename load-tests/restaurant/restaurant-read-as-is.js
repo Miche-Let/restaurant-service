@@ -45,7 +45,7 @@ const SIZE = __ENV.SIZE || '10';
 
 const DEBUG = __ENV.DEBUG === 'true';
 const SLEEP_SECONDS = Number(__ENV.SLEEP_SECONDS || 1);
-const SUMMARY_PATH = __ENV.SUMMARY_PATH || 'load-tests/restaurant/results/as-is-summary-korean.json';
+const SUMMARY_PATH = __ENV.SUMMARY_PATH || 'load-tests/restaurant/results/as-is-summary.json';
 
 if (!BASE_URL) {
     throw new Error('BASE_URL 환경변수는 필수입니다.');
