@@ -12,9 +12,8 @@ export const options = {
     summaryTrendStats: ['avg', 'min', 'med', 'p(90)', 'p(95)', 'p(99)', 'max'],
 };
 
-const BASE_URL = __ENV.BASE_URL || 'http://localhost:19000';
+const BASE_URL = __ENV.BASE_URL;
 const RESTAURANT_ID = __ENV.RESTAURANT_ID;
-
 const AUTH_TOKEN = __ENV.AUTH_TOKEN;
 
 const KEYWORD = __ENV.KEYWORD || '';
@@ -24,6 +23,10 @@ const PAGE = __ENV.PAGE || '0';
 const SIZE = __ENV.SIZE || '10';
 
 const DEBUG = __ENV.DEBUG === 'true';
+
+if (!BASE_URL) {
+    throw new Error('BASE_URL 환경변수는 필수입니다.');
+}
 
 if (!RESTAURANT_ID) {
     throw new Error('RESTAURANT_ID 환경변수는 필수입니다.');
@@ -49,8 +52,10 @@ function debugResponse(apiName, response) {
         return;
     }
 
+    const bodyPreview = response.body ? response.body.substring(0, 300) : '';
+
     console.log(`[${apiName}] status=${response.status}`);
-    console.log(`[${apiName}] body=${response.body}`);
+    console.log(`[${apiName}] bodyPreview=${bodyPreview}`);
 }
 
 export default function () {
