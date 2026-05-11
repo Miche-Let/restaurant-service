@@ -327,7 +327,7 @@ export function handleSummary(data) {
 
     summary.stdout = [
         '',
-        '한글 요약 summary.json 저장 완료',
+        'summary.json 저장 완료',
         `저장 경로=${SUMMARY_PATH}`,
         '',
         '[이번 실행 요약]',
