@@ -1,16 +1,37 @@
 import http from 'k6/http';
 import { check, group, sleep } from 'k6';
+import { Counter, Rate, Trend } from 'k6/metrics';
 
 export const options = {
     vus: Number(__ENV.VUS || 10),
-    duration: __ENV.DURATION || '1m',
+    duration: __ENV.DURATION || '3m',
 
     thresholds: {
         http_req_failed: ['rate<0.05'],
+
+        restaurant_detail_failed_rate: ['rate<0.05'],
+        restaurant_courses_failed_rate: ['rate<0.05'],
+        restaurant_search_failed_rate: ['rate<0.05'],
+
+        restaurant_detail_duration: ['p(95)<500'],
+        restaurant_courses_duration: ['p(95)<500'],
+        restaurant_search_duration: ['p(95)<500'],
     },
 
     summaryTrendStats: ['avg', 'min', 'med', 'p(90)', 'p(95)', 'p(99)', 'max'],
 };
+
+const restaurantDetailDuration = new Trend('restaurant_detail_duration', true);
+const restaurantCoursesDuration = new Trend('restaurant_courses_duration', true);
+const restaurantSearchDuration = new Trend('restaurant_search_duration', true);
+
+const restaurantDetailFailedRate = new Rate('restaurant_detail_failed_rate');
+const restaurantCoursesFailedRate = new Rate('restaurant_courses_failed_rate');
+const restaurantSearchFailedRate = new Rate('restaurant_search_failed_rate');
+
+const restaurantDetailRequests = new Counter('restaurant_detail_requests');
+const restaurantCoursesRequests = new Counter('restaurant_courses_requests');
+const restaurantSearchRequests = new Counter('restaurant_search_requests');
 
 const BASE_URL = __ENV.BASE_URL;
 const RESTAURANT_ID = __ENV.RESTAURANT_ID;
@@ -23,6 +44,8 @@ const PAGE = __ENV.PAGE || '0';
 const SIZE = __ENV.SIZE || '10';
 
 const DEBUG = __ENV.DEBUG === 'true';
+const SLEEP_SECONDS = Number(__ENV.SLEEP_SECONDS || 1);
+const SUMMARY_PATH = __ENV.SUMMARY_PATH || 'load-tests/restaurant/results/as-is-summary-korean.json';
 
 if (!BASE_URL) {
     throw new Error('BASE_URL 환경변수는 필수입니다.');
@@ -58,6 +81,12 @@ function debugResponse(apiName, response) {
     console.log(`[${apiName}] bodyPreview=${bodyPreview}`);
 }
 
+function recordApiMetrics(durationMetric, failedRateMetric, requestCounter, response) {
+    durationMetric.add(response.timings.duration);
+    failedRateMetric.add(response.status !== 200);
+    requestCounter.add(1);
+}
+
 export default function () {
     group('식당 상세 조회', function () {
         const response = http.get(
@@ -67,10 +96,23 @@ export default function () {
 
         debugResponse('식당 상세 조회', response);
 
-        check(response, {
-            '식당 상세 조회 status 200': (res) => res.status === 200,
-            '식당 상세 조회 응답 body 존재': (res) => !!res.body,
-        });
+        recordApiMetrics(
+            restaurantDetailDuration,
+            restaurantDetailFailedRate,
+            restaurantDetailRequests,
+            response
+        );
+
+        check(
+            response,
+            {
+                '식당 상세 조회 status 200': (res) => res.status === 200,
+                '식당 상세 조회 응답 body 존재': (res) => !!res.body,
+            },
+            {
+                api: 'restaurant-detail',
+            }
+        );
     });
 
     group('코스 목록 조회', function () {
@@ -81,10 +123,23 @@ export default function () {
 
         debugResponse('코스 목록 조회', response);
 
-        check(response, {
-            '코스 목록 조회 status 200': (res) => res.status === 200,
-            '코스 목록 조회 응답 body 존재': (res) => !!res.body,
-        });
+        recordApiMetrics(
+            restaurantCoursesDuration,
+            restaurantCoursesFailedRate,
+            restaurantCoursesRequests,
+            response
+        );
+
+        check(
+            response,
+            {
+                '코스 목록 조회 status 200': (res) => res.status === 200,
+                '코스 목록 조회 응답 body 존재': (res) => !!res.body,
+            },
+            {
+                api: 'restaurant-courses',
+            }
+        );
     });
 
     group('식당 목록 검색 조회', function () {
@@ -103,11 +158,197 @@ export default function () {
 
         debugResponse('식당 목록 검색 조회', response);
 
-        check(response, {
-            '식당 목록 검색 조회 status 200': (res) => res.status === 200,
-            '식당 목록 검색 조회 응답 body 존재': (res) => !!res.body,
-        });
+        recordApiMetrics(
+            restaurantSearchDuration,
+            restaurantSearchFailedRate,
+            restaurantSearchRequests,
+            response
+        );
+
+        check(
+            response,
+            {
+                '식당 목록 검색 조회 status 200': (res) => res.status === 200,
+                '식당 목록 검색 조회 응답 body 존재': (res) => !!res.body,
+            },
+            {
+                api: 'restaurant-search',
+            }
+        );
     });
 
-    sleep(1);
+    sleep(SLEEP_SECONDS);
+}
+
+function metricValues(data, metricName) {
+    return data.metrics[metricName] ? data.metrics[metricName].values : {};
+}
+
+function thresholdValues(data, metricName) {
+    const metric = data.metrics[metricName];
+
+    if (!metric || !metric.thresholds) {
+        return {};
+    }
+
+    return metric.thresholds;
+}
+
+function checkResult(data, groupName, checkName) {
+    const group = data.root_group.groups.find((item) => item.name === groupName);
+
+    if (!group) {
+        return {
+            성공: 0,
+            실패: 0,
+        };
+    }
+
+    const targetCheck = group.checks.find((item) => item.name === checkName);
+
+    if (!targetCheck) {
+        return {
+            성공: 0,
+            실패: 0,
+        };
+    }
+
+    return {
+        성공: targetCheck.passes,
+        실패: targetCheck.fails,
+    };
+}
+
+function toPercent(rate) {
+    if (rate === undefined || rate === null) {
+        return null;
+    }
+
+    return `${(rate * 100).toFixed(2)}%`;
+}
+
+function round(value) {
+    if (value === undefined || value === null) {
+        return null;
+    }
+
+    return Number(value.toFixed(2));
+}
+
+function createResponseTimeSummary(duration) {
+    return {
+        평균: round(duration.avg),
+        최소: round(duration.min),
+        중앙값: round(duration.med),
+        p90: round(duration['p(90)']),
+        p95: round(duration['p(95)']),
+        p99: round(duration['p(99)']),
+        최대: round(duration.max),
+    };
+}
+
+function createApiSummary(data, durationMetricName, failedRateMetricName, requestMetricName, groupName) {
+    const duration = metricValues(data, durationMetricName);
+    const failedRate = metricValues(data, failedRateMetricName);
+    const requests = metricValues(data, requestMetricName);
+
+    return {
+        요청_수: requests.count || 0,
+        초당_요청_수: round(requests.rate),
+        실패율: toPercent(failedRate.rate),
+        응답_시간_ms: createResponseTimeSummary(duration),
+        체크_결과: {
+            status_200: checkResult(data, groupName, `${groupName} status 200`),
+            응답_body_존재: checkResult(data, groupName, `${groupName} 응답 body 존재`),
+        },
+        threshold_결과: {
+            실패율: thresholdValues(data, failedRateMetricName),
+            응답_시간: thresholdValues(data, durationMetricName),
+        },
+    };
+}
+
+function createKoreanSummary(data) {
+    const totalDuration = metricValues(data, 'http_req_duration');
+    const totalFailedRate = metricValues(data, 'http_req_failed');
+    const totalRequests = metricValues(data, 'http_reqs');
+    const checks = metricValues(data, 'checks');
+    const iterations = metricValues(data, 'iterations');
+    const vus = metricValues(data, 'vus');
+    const vusMax = metricValues(data, 'vus_max');
+
+    return {
+        테스트_요약: {
+            전체_요청_수: totalRequests.count || 0,
+            전체_초당_요청_수: round(totalRequests.rate),
+            전체_실패율: toPercent(totalFailedRate.rate),
+            체크_성공률: toPercent(checks.rate),
+            반복_수: iterations.count || 0,
+            현재_VUS: vus.value || null,
+            최대_VUS: vusMax.value || vusMax.max || null,
+            테스트_실행_시간_ms: round(data.state.testRunDurationMs),
+            전체_응답_시간_ms: createResponseTimeSummary(totalDuration),
+            threshold_결과: {
+                전체_HTTP_실패율: thresholdValues(data, 'http_req_failed'),
+            },
+        },
+
+        API별_지표: {
+            식당_상세_조회_API: createApiSummary(
+                data,
+                'restaurant_detail_duration',
+                'restaurant_detail_failed_rate',
+                'restaurant_detail_requests',
+                '식당 상세 조회'
+            ),
+            코스_목록_조회_API: createApiSummary(
+                data,
+                'restaurant_courses_duration',
+                'restaurant_courses_failed_rate',
+                'restaurant_courses_requests',
+                '코스 목록 조회'
+            ),
+            식당_목록_검색_조회_API: createApiSummary(
+                data,
+                'restaurant_search_duration',
+                'restaurant_search_failed_rate',
+                'restaurant_search_requests',
+                '식당 목록 검색 조회'
+            ),
+        },
+    };
+}
+
+export function handleSummary(data) {
+    const koreanSummary = createKoreanSummary(data);
+
+    const summary = {};
+    summary[SUMMARY_PATH] = JSON.stringify(koreanSummary, null, 2);
+
+    summary.stdout = [
+        '',
+        '한글 요약 summary.json 저장 완료',
+        `저장 경로=${SUMMARY_PATH}`,
+        '',
+        '[이번 실행 요약]',
+        `- 전체 요청 수: ${koreanSummary.테스트_요약.전체_요청_수}`,
+        `- 전체 초당 요청 수: ${koreanSummary.테스트_요약.전체_초당_요청_수}`,
+        `- 전체 실패율: ${koreanSummary.테스트_요약.전체_실패율}`,
+        `- 체크 성공률: ${koreanSummary.테스트_요약.체크_성공률}`,
+        `- 전체 평균 응답 시간: ${koreanSummary.테스트_요약.전체_응답_시간_ms.평균}ms`,
+        `- 전체 p95 응답 시간: ${koreanSummary.테스트_요약.전체_응답_시간_ms.p95}ms`,
+        '',
+        '[API별 p95 응답 시간]',
+        `- 식당 상세 조회 API: ${koreanSummary.API별_지표.식당_상세_조회_API.응답_시간_ms.p95}ms`,
+        `- 코스 목록 조회 API: ${koreanSummary.API별_지표.코스_목록_조회_API.응답_시간_ms.p95}ms`,
+        `- 식당 목록 검색 조회 API: ${koreanSummary.API별_지표.식당_목록_검색_조회_API.응답_시간_ms.p95}ms`,
+        '',
+        '[API별 실패율]',
+        `- 식당 상세 조회 API: ${koreanSummary.API별_지표.식당_상세_조회_API.실패율}`,
+        `- 코스 목록 조회 API: ${koreanSummary.API별_지표.코스_목록_조회_API.실패율}`,
+        `- 식당 목록 검색 조회 API: ${koreanSummary.API별_지표.식당_목록_검색_조회_API.실패율}`,
+        '',
+    ].join('\n');
+
+    return summary;
 }
