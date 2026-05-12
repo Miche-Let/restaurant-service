@@ -65,6 +65,8 @@ const SIZE = __ENV.SIZE || '10';
 
 const DEBUG = __ENV.DEBUG === 'true';
 const SLEEP_SECONDS = Number(__ENV.SLEEP_SECONDS || 1);
+const FAILURE_LOG_LIMIT = Number(__ENV.FAILURE_LOG_LIMIT || 20);
+let failureLogCount = 0;
 const SUMMARY_PATH = __ENV.SUMMARY_PATH || 'load-tests/restaurant/results/bottleneck-summary.json';
 
 if (!BASE_URL) {
@@ -128,6 +130,12 @@ function logFailedResponse(apiName, response) {
     if (success) {
         return;
     }
+
+    if (failureLogCount >= FAILURE_LOG_LIMIT) {
+        return;
+    }
+
+    failureLogCount += 1;
 
     const bodyPreview = response.body ? response.body.substring(0, 500) : '';
 
