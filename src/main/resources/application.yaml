@@ -15,6 +15,9 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
+  cache:
+    type: redis
+
 server:
   port: ${SERVER_PORT:19300}
 
@@ -38,3 +41,8 @@ feign:
 kafka:
   topic:
     reservation-check-in-completed: reservation.check-in.completed
+
+cache:
+  ttl:
+    restaurant-detail: ${CACHE_TTL_RESTAURANT_DETAIL:300}
+    restaurant-courses: ${CACHE_TTL_RESTAURANT_COURSES:300}
