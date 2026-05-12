@@ -44,6 +44,8 @@ dependencies {
     implementation 'com.github.Miche-Let:common-auth-feign:0.1.2'
     implementation 'com.github.Miche-Let:common-auth-webmvc:0.1.5'
     implementation 'org.springframework.kafka:spring-kafka'
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
     runtimeOnly 'org.postgresql:postgresql'
 
