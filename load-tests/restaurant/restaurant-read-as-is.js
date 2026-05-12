@@ -5,17 +5,17 @@ import { Counter, Rate, Trend } from 'k6/metrics';
 const TEST_MODE = __ENV.TEST_MODE || 'load';
 
 const commonThresholds = {
-    // 전체 HTTP 실패율은 1% 미만이어야 한다.
+    // 전체 HTTP 실패율은 1% 미만
     http_req_failed: ['rate<0.01'],
 
-    // API별 실패율도 각각 1% 미만이어야 한다.
+    // API별 실패율도 각각 1% 미만
     restaurant_detail_failed_rate: ['rate<0.01'],
     restaurant_courses_failed_rate: ['rate<0.01'],
     restaurant_search_failed_rate: ['rate<0.01'],
 };
 
 const loadThresholds = {
-    // 본 부하테스트에서만 API별 p95/p99 응답 시간 기준을 적용한다.
+    // load 부하테스트에서만 API별 p95/p99 응답 시간 기준을 적용
     restaurant_detail_duration: ['p(95)<100', 'p(99)<200'],
     restaurant_courses_duration: ['p(95)<100', 'p(99)<200'],
     restaurant_search_duration: ['p(95)<100', 'p(99)<200'],
