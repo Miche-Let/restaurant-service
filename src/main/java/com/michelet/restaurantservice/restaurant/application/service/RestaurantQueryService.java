@@ -40,7 +40,6 @@ public class RestaurantQueryService {
      * 식당이 존재하지 않으면 RESTAURANT_404_NOT_FOUND 예외던짐
      */
     @Cacheable(cacheNames = "restaurantDetail", key = "'restaurant:detail:' + #restaurantId")
-    @Transactional(readOnly = true)
     public GetRestaurantResult getRestaurant(UUID restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new RestaurantException(RestaurantErrorCode.RESTAURANT_404_NOT_FOUND));
