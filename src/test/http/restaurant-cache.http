@@ -1,0 +1,178 @@
+### 공통 변수
+@gatewayUrl = http://localhost:19000
+
+### 테스트 OWNER 계정
+@ownerLoginId = test90212
+@ownerPassword = test123!0212
+@ownerName = owner90212
+@ownerEmail = owner0090212@naver.com
+@ownerPhone = 010-0000-1013
+
+
+### 1. OWNER 회원가입
+POST {{gatewayUrl}}/api/v1/users/signup
+Content-Type: application/json
+
+{
+  "loginId": "{{ownerLoginId}}",
+  "password": "{{ownerPassword}}",
+  "name": "{{ownerName}}",
+  "email": "{{ownerEmail}}",
+  "phone": "{{ownerPhone}}",
+  "userRole": "OWNER"
+}
+
+
+### 2. OWNER 로그인
+POST {{gatewayUrl}}/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "loginId": "{{ownerLoginId}}",
+  "password": "{{ownerPassword}}"
+}
+
+> {%
+    client.global.clear("ownerToken");
+
+    let token = null;
+
+    if (response.body.data && response.body.data.accessToken) {
+        token = response.body.data.accessToken;
+    } else if (response.body.data && response.body.data.token) {
+        token = response.body.data.token;
+    } else if (response.body.accessToken) {
+        token = response.body.accessToken;
+    } else if (response.body.token) {
+        token = response.body.token;
+    }
+
+    if (token) {
+        client.global.set("ownerToken", token);
+        client.log("Saved ownerToken");
+    }
+%}
+
+
+### 3. 식당 등록
+POST {{gatewayUrl}}/api/v1/restaurants
+Content-Type: application/json
+Authorization: Bearer {{ownerToken}}
+
+{
+  "name": "Redis Cache Test Dining",
+  "address": "서울특별시 강남구 테헤란로 123",
+  "phone": "02-1234-5678",
+  "description": "Redis 캐시 검증용 파인다이닝 레스토랑",
+  "reservationOpenAt": "10:00:00",
+  "avgMealDurationMin": 90,
+  "status": "OPEN",
+  "businessHours": "MON-FRI 11:00-20:00 / SAT,SUN CLOSED"
+}
+
+> {%
+    client.global.clear("restaurantId");
+
+    if (response.body.data && response.body.data.restaurantId) {
+        client.global.set("restaurantId", response.body.data.restaurantId);
+        client.log("Saved restaurantId: " + response.body.data.restaurantId);
+    }
+%}
+
+
+### 4. 코스 등록
+POST {{gatewayUrl}}/api/v1/restaurants/{{restaurantId}}/courses
+Content-Type: application/json
+Authorization: Bearer {{ownerToken}}
+
+{
+  "name": "Redis Cache Test Dinner Course",
+  "price": 150000,
+  "sessionType": "DINNER",
+  "status": "AVAILABLE",
+  "menus": [
+    {
+      "coursePart": "AMUSE_BOUCHE",
+      "menuName": "한우 타르타르",
+      "sortOrder": 1
+    },
+    {
+      "coursePart": "APPETIZER",
+      "menuName": "제철 샐러드",
+      "sortOrder": 2
+    },
+    {
+      "coursePart": "FISH",
+      "menuName": "제철 생선 구이",
+      "sortOrder": 3
+    },
+    {
+      "coursePart": "MAIN",
+      "menuName": "양갈비",
+      "sortOrder": 4
+    },
+    {
+      "coursePart": "DESSERT",
+      "menuName": "바닐라 무스",
+      "sortOrder": 5
+    }
+  ]
+}
+
+
+### 5. 식당 상세 조회 - 1차 호출
+GET {{gatewayUrl}}/api/v1/restaurants/{{restaurantId}}
+Authorization: Bearer {{ownerToken}}
+Content-Type: application/json
+
+> {%
+    client.test("식당 상세 조회 1차 호출 성공", function () {
+        client.assert(response.status === 200, "Expected 200 but got " + response.status);
+        client.assert(response.body.success === true, "success 값이 true가 아님");
+    });
+
+    client.log("상세 캐시 key 확인:");
+    client.log("restaurant:detail:" + client.global.get("restaurantId"));
+%}
+
+
+### 6. 식당 상세 조회 - 2차 호출
+GET {{gatewayUrl}}/api/v1/restaurants/{{restaurantId}}
+Authorization: Bearer {{ownerToken}}
+Content-Type: application/json
+
+> {%
+    client.test("식당 상세 조회 2차 호출 성공", function () {
+        client.assert(response.status === 200, "Expected 200 but got " + response.status);
+        client.assert(response.body.success === true, "success 값이 true가 아님");
+    });
+%}
+
+
+### 7. 코스 목록 조회 - 1차 호출
+GET {{gatewayUrl}}/api/v1/restaurants/{{restaurantId}}/courses
+Authorization: Bearer {{ownerToken}}
+Content-Type: application/json
+
+> {%
+    client.test("코스 목록 조회 1차 호출 성공", function () {
+        client.assert(response.status === 200, "Expected 200 but got " + response.status);
+        client.assert(response.body.success === true, "success 값이 true가 아님");
+    });
+
+    client.log("코스 캐시 key 확인:");
+    client.log("restaurant:courses:" + client.global.get("restaurantId"));
+%}
+
+
+### 8. 코스 목록 조회 - 2차 호출
+GET {{gatewayUrl}}/api/v1/restaurants/{{restaurantId}}/courses
+Authorization: Bearer {{ownerToken}}
+Content-Type: application/json
+
+> {%
+    client.test("코스 목록 조회 2차 호출 성공", function () {
+        client.assert(response.status === 200, "Expected 200 but got " + response.status);
+        client.assert(response.body.success === true, "success 값이 true가 아님");
+    });
+%}

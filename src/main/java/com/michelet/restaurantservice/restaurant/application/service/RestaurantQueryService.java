@@ -10,6 +10,7 @@ import com.michelet.restaurantservice.restaurant.domain.exception.RestaurantExce
 import com.michelet.restaurantservice.restaurant.domain.model.Restaurant;
 import com.michelet.restaurantservice.course.domain.repository.RestaurantCourseRepository;
 import com.michelet.restaurantservice.restaurant.domain.repository.RestaurantRepository;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -38,7 +39,7 @@ public class RestaurantQueryService {
      * 외부 상세 조회 API / 내부 조회 API에서 공통으로 사용하는 조회 메서드
      * 식당이 존재하지 않으면 RESTAURANT_404_NOT_FOUND 예외던짐
      */
-    @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "restaurantDetail", key = "'restaurant:detail:' + #restaurantId")
     public GetRestaurantResult getRestaurant(UUID restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new RestaurantException(RestaurantErrorCode.RESTAURANT_404_NOT_FOUND));

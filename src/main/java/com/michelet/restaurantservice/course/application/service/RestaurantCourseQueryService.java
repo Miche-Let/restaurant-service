@@ -10,6 +10,7 @@ import com.michelet.restaurantservice.course.domain.model.RestaurantCourseMenu;
 import com.michelet.restaurantservice.course.domain.repository.RestaurantCourseMenuRepository;
 import com.michelet.restaurantservice.course.domain.repository.RestaurantCourseRepository;
 import com.michelet.restaurantservice.restaurant.domain.repository.RestaurantRepository;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +32,7 @@ public class RestaurantCourseQueryService {
         this.restaurantCourseMenuRepository = restaurantCourseMenuRepository;
     }
 
+    @Cacheable(cacheNames = "restaurantCourses", key = "'restaurant:courses:' + #restaurantId")
     @Transactional(readOnly = true)
     public List<CourseListItemResult> getCourses(UUID restaurantId) {
         // 코스 목록 조회 전에 식당 존재 여부를 먼저 검증

@@ -28,6 +28,11 @@ spring:
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
 
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+
 eureka:
   client:
     enabled: ${EUREKA_CLIENT_ENABLED:true}
