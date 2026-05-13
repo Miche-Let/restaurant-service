@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.times;
@@ -91,10 +92,13 @@ class RestaurantQueryServiceCacheTest {
                 .willReturn(List.of());
 
         // 첫 번째 호출: cache miss → repository 조회 발생
-        restaurantQueryService.getRestaurant(restaurantId);
+        var firstResult = restaurantQueryService.getRestaurant(restaurantId);
 
         // 두 번째 호출: cache hit → repository 조회가 다시 발생하면 안 됨
-        restaurantQueryService.getRestaurant(restaurantId);
+        var secondResult = restaurantQueryService.getRestaurant(restaurantId);
+
+        // cache hit 결과가 최초 조회 결과와 동일한지 확인
+        assertThat(secondResult).isEqualTo(firstResult);
 
         then(restaurantRepository)
                 .should(times(1))
