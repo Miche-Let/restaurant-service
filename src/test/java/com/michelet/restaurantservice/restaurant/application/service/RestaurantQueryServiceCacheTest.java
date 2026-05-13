@@ -54,9 +54,14 @@ class RestaurantQueryServiceCacheTest {
     @AfterEach
     void tearDown() {
         Cache restaurantDetailCache = cacheManager.getCache("restaurantDetail");
+        Cache restaurantCoursesCache = cacheManager.getCache("restaurantCourses");
 
         if (restaurantDetailCache != null) {
             restaurantDetailCache.clear();
+        }
+
+        if (restaurantCoursesCache != null) {
+            restaurantCoursesCache.clear();
         }
 
         Mockito.reset(restaurantRepository, restaurantCourseRepository);
@@ -106,7 +111,7 @@ class RestaurantQueryServiceCacheTest {
 
         @Bean
         CacheManager cacheManager() {
-            return new ConcurrentMapCacheManager("restaurantDetail");
+            return new ConcurrentMapCacheManager("restaurantDetail", "restaurantCourses");
         }
 
         @Bean
