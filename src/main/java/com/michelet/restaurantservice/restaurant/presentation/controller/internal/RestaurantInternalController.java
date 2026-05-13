@@ -39,6 +39,6 @@ public class RestaurantInternalController {
     public ApiResponse<GetOwnerRestaurantIdResponse> getOwnerRestaurantId(@PathVariable UUID ownerId) {
         UUID restaurantId = restaurantQueryService.getRestaurantIdByOwnerId(ownerId);
 
-        return ApiResponse.ok(GetOwnerRestaurantIdResponse.from(restaurantId));
+        return ApiResponse.ok(GetOwnerRestaurantIdResponse.of(ownerId, restaurantId));
     }
 }
