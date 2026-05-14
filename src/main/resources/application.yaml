@@ -40,7 +40,7 @@ feign:
 
 kafka:
   topic:
-    reservation-check-in-completed: reservation.check-in.completed
+    reservation-check-in-completed: reservation.checked-in
 
 cache:
   ttl:
