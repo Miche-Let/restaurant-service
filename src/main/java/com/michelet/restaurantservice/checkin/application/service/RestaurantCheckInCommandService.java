@@ -80,7 +80,8 @@ public class RestaurantCheckInCommandService {
             ApiResponse<ReservationCheckInResponse> response = reservationClient.checkInReservation(
                     ReservationCheckInRequest.of(
                             command.reservationId(),
-                            command.restaurantId()
+                            command.restaurantId(),
+                            command.checkedInBy()
                     ),
                     command.checkedInBy(),
                     command.userRole().name()
