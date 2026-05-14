@@ -1,0 +1,265 @@
+@gatewayUrl = http://localhost:19000
+
+@ownerLoginId = test90212
+@ownerPassword = test123!0212
+@ownerName = owner90212
+@ownerEmail = owner0090212@naver.com
+@ownerPhone = 010-0000-1013
+
+@userLoginId = test95
+@userPassword = test123!5
+@userName = user95
+@userEmail = user0095@naver.com
+@userPhone = 010-1000-2005
+
+@reservedDate = 2026-05-14
+@slotStartTime = 14:55:00
+
+
+### 0-1. OWNER 회원가입
+POST {{gatewayUrl}}/api/v1/users/signup
+Content-Type: application/json
+
+{
+  "loginId": "{{ownerLoginId}}",
+  "password": "{{ownerPassword}}",
+  "name": "{{ownerName}}",
+  "email": "{{ownerEmail}}",
+  "phone": "{{ownerPhone}}",
+  "userRole": "OWNER"
+}
+
+> {%
+    client.test("OWNER 회원가입 응답 확인", function () {
+        client.assert(response.status === 200 || response.status === 201 || response.status === 409,
+            "Unexpected status: " + response.status);
+    });
+%}
+
+
+### 0-2. USER 회원가입
+POST {{gatewayUrl}}/api/v1/users/signup
+Content-Type: application/json
+
+{
+  "loginId": "{{userLoginId}}",
+  "password": "{{userPassword}}",
+  "name": "{{userName}}",
+  "email": "{{userEmail}}",
+  "phone": "{{userPhone}}",
+  "userRole": "USER"
+}
+
+> {%
+    client.test("USER 회원가입 응답 확인", function () {
+        client.assert(response.status === 200 || response.status === 201 || response.status === 409,
+            "Unexpected status: " + response.status);
+    });
+%}
+
+
+### 1. OWNER 로그인
+POST {{gatewayUrl}}/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "loginId": "{{ownerLoginId}}",
+  "password": "{{ownerPassword}}"
+}
+
+> {%
+    client.global.clear("ownerToken");
+    client.global.clear("ownerId");
+
+    let token = null;
+
+    if (response.body.data && response.body.data.accessToken) {
+        token = response.body.data.accessToken;
+    } else if (response.body.accessToken) {
+        token = response.body.accessToken;
+    }
+
+    if (!token) {
+        client.log(JSON.stringify(response.body, null, 2));
+        throw new Error("OWNER accessToken을 찾지 못했습니다.");
+    }
+
+    client.global.set("ownerToken", token);
+
+    let payloadBase64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+    payloadBase64 += "=".repeat((4 - payloadBase64.length % 4) % 4);
+
+    const payload = JSON.parse(atob(payloadBase64));
+
+    client.global.set("ownerId", payload["sub"]);
+    client.log("ownerToken saved");
+    client.log("ownerId saved = " + payload["sub"]);
+%}
+
+
+### 2. USER 로그인
+POST {{gatewayUrl}}/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "loginId": "{{userLoginId}}",
+  "password": "{{userPassword}}"
+}
+
+> {%
+    client.global.clear("userToken");
+    client.global.clear("userId");
+
+    let token = null;
+
+    if (response.body.data && response.body.data.accessToken) {
+        token = response.body.data.accessToken;
+    } else if (response.body.accessToken) {
+        token = response.body.accessToken;
+    }
+
+    if (!token) {
+        client.log(JSON.stringify(response.body, null, 2));
+        throw new Error("USER accessToken을 찾지 못했습니다.");
+    }
+
+    client.global.set("userToken", token);
+
+    let payloadBase64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+    payloadBase64 += "=".repeat((4 - payloadBase64.length % 4) % 4);
+
+    const payload = JSON.parse(atob(payloadBase64));
+
+    client.global.set("userId", payload.sub);
+    client.log("userToken saved");
+    client.log("userId saved = " + payload.sub);
+%}
+
+
+### 3. 식당 등록
+POST {{gatewayUrl}}/api/v1/restaurants
+Content-Type: application/json
+Authorization: Bearer {{ownerToken}}
+
+{
+  "name": "MicheLet CheckIn Event Test",
+  "address": "서울특별시 강남구 테헤란로 123",
+  "phone": "02-1234-5678",
+  "description": "체크인 이벤트 연동 테스트용 레스토랑",
+  "reservationOpenAt": "10:00:00",
+  "avgMealDurationMin": 90,
+  "status": "OPEN",
+  "businessHours": "MON-FRI 11:00-20:00 / SAT,SUN CLOSED"
+}
+
+> {%
+    client.global.clear("restaurantId");
+
+    if (response.status === 200 && response.body.data) {
+        client.global.set("restaurantId", response.body.data.restaurantId);
+        client.log("restaurantId saved = " + response.body.data.restaurantId);
+    } else {
+        client.log(JSON.stringify(response.body, null, 2));
+        throw new Error("식당 등록 실패");
+    }
+%}
+
+
+### 4. 코스 등록
+POST {{gatewayUrl}}/api/v1/restaurants/{{restaurantId}}/courses
+Content-Type: application/json
+Authorization: Bearer {{ownerToken}}
+
+{
+  "name": "Dinner Course",
+  "price": 150000,
+  "sessionType": "DINNER",
+  "status": "AVAILABLE",
+  "menus": [
+    {
+      "coursePart": "AMUSE_BOUCHE",
+      "menuName": "한우 타르타르",
+      "sortOrder": 1
+    },
+    {
+      "coursePart": "APPETIZER",
+      "menuName": "제철 샐러드",
+      "sortOrder": 2
+    },
+    {
+      "coursePart": "FISH",
+      "menuName": "제철 생선 구이",
+      "sortOrder": 3
+    },
+    {
+      "coursePart": "MAIN",
+      "menuName": "양갈비",
+      "sortOrder": 4
+    },
+    {
+      "coursePart": "DESSERT",
+      "menuName": "바닐라 무스",
+      "sortOrder": 5
+    }
+  ]
+}
+
+> {%
+    client.global.clear("courseId");
+
+    if (response.status === 200 && response.body.data) {
+        client.global.set("courseId", response.body.data.courseId);
+        client.log("courseId saved = " + response.body.data.courseId);
+    } else {
+        client.log(JSON.stringify(response.body, null, 2));
+        throw new Error("코스 등록 실패");
+    }
+%}
+
+
+### 5. 예약 생성
+POST {{gatewayUrl}}/api/v1/reservations
+Content-Type: application/json
+Authorization: Bearer {{userToken}}
+X-Waiting-Token: {{userId}}:{{restaurantId}}
+
+{
+  "restaurantId": "{{restaurantId}}",
+  "timeSlotId": "{{$uuid}}",
+  "reservedDate": "{{reservedDate}}",
+  "slotStartTime": "{{slotStartTime}}",
+  "guestCount": 2,
+  "courses": [
+    {
+      "courseId": "{{courseId}}",
+      "quantity": 1,
+      "unitPrice": 150000
+    }
+  ]
+}
+
+> {%
+    client.global.clear("reservationId");
+
+    if ((response.status === 200 || response.status === 201) && response.body.data) {
+        client.global.set("reservationId", response.body.data.reservationId);
+        client.log("reservationId saved = " + response.body.data.reservationId);
+    } else {
+        client.log(JSON.stringify(response.body, null, 2));
+        throw new Error("예약 생성 실패");
+    }
+%}
+
+
+### 6. 예약 상세 조회
+GET {{gatewayUrl}}/api/v1/reservations/{{reservationId}}
+Authorization: Bearer {{userToken}}
+
+> {%
+    client.test("예약 상세 조회 성공", function () {
+        client.assert(response.status === 200, "Expected 200 but got " + response.status);
+        client.assert(response.body.success === true, "success 값이 true가 아님");
+    });
+
+    client.log(JSON.stringify(response.body, null, 2));
+%}

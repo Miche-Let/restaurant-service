@@ -1,0 +1,18 @@
+@gatewayUrl = http://localhost:19000
+
+@restaurantId = {{restaurantId}}
+@reservationId = {{reservationId}}
+
+### 체크인 처리 단독 검증
+PATCH {{gatewayUrl}}/api/v1/restaurants/{{restaurantId}}/reservations/{{reservationId}}/check-in
+Authorization: Bearer {{ownerToken}}
+
+> {%
+    client.log("체크인 처리 응답");
+    client.log(JSON.stringify(response.body, null, 2));
+
+    client.test("체크인 처리 성공", function () {
+        client.assert(response.status === 200, "Expected 200 but got " + response.status);
+        client.assert(response.body.success === true, "체크인 처리 success=false");
+    });
+%}

@@ -5,15 +5,18 @@ import java.util.UUID;
 // reservation-service 내부 체크인 API 요청 DTO
 public record ReservationCheckInRequest(
         UUID reservationId,
-        UUID restaurantId
+        UUID restaurantId,
+        UUID checkedInBy
 ) {
     public static ReservationCheckInRequest of(
             UUID reservationId,
-            UUID restaurantId
+            UUID restaurantId,
+            UUID checkedInBy
     ) {
         return new ReservationCheckInRequest(
                 validateReservationId(reservationId),
-                validateRestaurantId(restaurantId)
+                validateRestaurantId(restaurantId),
+                validateCheckedInBy(checkedInBy)
         );
     }
 
@@ -29,6 +32,13 @@ public record ReservationCheckInRequest(
             throw new IllegalArgumentException("식당 ID는 필수입니다.");
         }
         return restaurantId;
+    }
+
+    private static UUID validateCheckedInBy(UUID checkedInBy) {
+        if (checkedInBy == null) {
+            throw new IllegalArgumentException("체크인 처리자 ID는 필수 입니다.");
+        }
+        return checkedInBy;
     }
 
 }
