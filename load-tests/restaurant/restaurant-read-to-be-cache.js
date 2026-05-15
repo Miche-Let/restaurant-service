@@ -8,7 +8,7 @@ const commonThresholds = {
     // smoke / load 공통: 오류율 0.00%
     http_req_failed: ['rate==0'],
 
-    // API별 실패율도 0.00%
+    // API별 실패율 0.00%
     restaurant_detail_failed_rate: ['rate==0'],
     restaurant_courses_failed_rate: ['rate==0'],
     restaurant_search_failed_rate: ['rate==0'],
@@ -75,9 +75,9 @@ const STATUS = __ENV.STATUS || 'OPEN';
 const PAGE = __ENV.PAGE || '0';
 const SIZE = __ENV.SIZE || '10';
 
-const SLEEP_SECONDS = Number(__ENV.SLEEP_SECONDS || 0.2);
 const DEBUG = __ENV.DEBUG === 'true';
-const FAILURE_LOG_LIMIT = Number(__ENV.FAILURE_LOG_LIMIT || 20);
+const SLEEP_SECONDS = parseNonNegativeNumber(__ENV.SLEEP_SECONDS, 0.2, 'SLEEP_SECONDS');
+const FAILURE_LOG_LIMIT = parseNonNegativeInteger(__ENV.FAILURE_LOG_LIMIT, 20, 'FAILURE_LOG_LIMIT');
 const SUMMARY_PATH = __ENV.SUMMARY_PATH || 'load-tests/restaurant/results/to-be-cache-summary.json';
 
 let failureLogCount = 0;
@@ -92,6 +92,34 @@ if (!RESTAURANT_ID && RESTAURANT_IDS.length === 0) {
 
 if (!AUTH_TOKEN) {
     throw new Error('AUTH_TOKEN 환경변수는 필수입니다.');
+}
+
+function parseNonNegativeNumber(value, defaultValue, name) {
+    if (value === undefined || value === null || value === '') {
+        return defaultValue;
+    }
+
+    const parsed = Number(value);
+
+    if (!Number.isFinite(parsed) || parsed < 0) {
+        throw new Error(`${name} 환경변수는 0 이상의 숫자여야 합니다. value=${value}`);
+    }
+
+    return parsed;
+}
+
+function parseNonNegativeInteger(value, defaultValue, name) {
+    if (value === undefined || value === null || value === '') {
+        return defaultValue;
+    }
+
+    const parsed = Number(value);
+
+    if (!Number.isFinite(parsed) || !Number.isInteger(parsed) || parsed < 0) {
+        throw new Error(`${name} 환경변수는 0 이상의 정수여야 합니다. value=${value}`);
+    }
+
+    return parsed;
 }
 
 function pickRestaurantId() {
@@ -149,11 +177,16 @@ function logFailedResponse(apiName, response) {
 
     failureLogCount += 1;
 
-    const bodyPreview = response.body ? response.body.substring(0, 500) : '';
+    const baseMessage =
+        `[실패 응답] api=${apiName}, status=${response.status}, duration=${response.timings.duration}ms`;
 
-    console.error(
-        `[실패 응답] api=${apiName}, status=${response.status}, duration=${response.timings.duration}ms, bodyPreview=${bodyPreview}`
-    );
+    if (!DEBUG) {
+        console.error(baseMessage);
+        return;
+    }
+
+    const bodyPreview = response.body ? response.body.substring(0, 500) : '';
+    console.error(`${baseMessage}, bodyPreview=${bodyPreview}`);
 }
 
 function recordApiMetrics(durationMetric, failedRateMetric, requestCounter, response) {
@@ -268,7 +301,6 @@ function getRestaurantCourses(restaurantId) {
 export default function () {
     const restaurantId = pickRestaurantId();
 
-    // 실제 사용자 흐름에 가깝게 검색 → 상세 → 코스 목록 순서로 호출한다.
     searchRestaurants();
     getRestaurantDetail(restaurantId);
     getRestaurantCourses(restaurantId);
@@ -340,7 +372,6 @@ function createKoreanSummary(data) {
     const totalFailedRate = metricValues(data, 'http_req_failed');
     const totalRequests = metricValues(data, 'http_reqs');
     const checks = metricValues(data, 'checks');
-    const vus = metricValues(data, 'vus');
     const vusMax = metricValues(data, 'vus_max');
 
     return {
@@ -351,7 +382,6 @@ function createKoreanSummary(data) {
             전체_초당_요청_수: round(totalRequests.rate),
             전체_실패율: toPercent(totalFailedRate.rate),
             체크_성공률: toPercent(checks.rate),
-            현재_VUS: vus.value || null,
             최대_VUS: vusMax.value || vusMax.max || null,
             테스트_실행_시간_ms: round(data.state.testRunDurationMs),
             전체_응답_시간_ms: createResponseTimeSummary(totalDuration),
@@ -413,6 +443,7 @@ export function handleSummary(data) {
         `- 전체 초당 요청 수: ${koreanSummary.테스트_요약.전체_초당_요청_수}`,
         `- 전체 실패율: ${koreanSummary.테스트_요약.전체_실패율}`,
         `- 체크 성공률: ${koreanSummary.테스트_요약.체크_성공률}`,
+        `- 최대 VUS: ${koreanSummary.테스트_요약.최대_VUS}`,
         `- 전체 평균 응답 시간: ${koreanSummary.테스트_요약.전체_응답_시간_ms.평균}ms`,
         `- 전체 p95 응답 시간: ${koreanSummary.테스트_요약.전체_응답_시간_ms.p95}ms`,
         '',
