@@ -15,7 +15,7 @@ RUN ./gradlew clean bootJar --no-daemon
 FROM eclipse-temurin:17-jre
 WORKDIR /app
 
-ENV SPRING_PROFILES_ACTIVE=docker
+ENV SPRING_PROFILES_ACTIVE=prod
 
 COPY --from=builder /app/build/libs/*.jar app.jar
 

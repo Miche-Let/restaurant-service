@@ -1,12 +1,13 @@
-server:
-  port: ${SERVER_PORT:19300}
-
 spring:
+  config:
+    activate:
+      on-profile: prod
+
   application:
     name: restaurant-service
 
   datasource:
-    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT:5432}/${POSTGRES_DB}
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
@@ -22,6 +23,10 @@ spring:
       group-id: ${KAFKA_CONSUMER_GROUP_ID:restaurant-service-check-in-consumer}
       auto-offset-reset: latest
       enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    listener:
+      auto-startup: ${KAFKA_LISTENER_AUTO_STARTUP:true}
 
   jpa:
     hibernate:
@@ -30,6 +35,7 @@ spring:
       hibernate:
         default_schema: restaurant_service
         format_sql: true
+    open-in-view: false
     show-sql: false
 
   cloud:
@@ -42,13 +48,27 @@ spring:
         - "10.0"
       use-only-site-local-interfaces: true
 
+server:
+  port: ${SERVER_PORT:19300}
+
 eureka:
   client:
     enabled: ${EUREKA_ENABLED:false}
     service-url:
-      defaultZone: http://${EUREKA_HOST}:${EUREKA_PORT}/eureka/
+      defaultZone: http://${EUREKA_HOST}:${EUREKA_PORT:8761}/eureka/
   instance:
     prefer-ip-address: true
+
+internal:
+  auth:
+    secret: ${INTERNAL_AUTH_SECRET}
+
+jwt:
+  secret: ${JWT_SECRET}
+
+feign:
+  reservation-service:
+    url: ${FEIGN_RESERVATION_SERVICE_URL:}
 
 kafka:
   topic:
@@ -63,7 +83,10 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,prometheus
+        include: health,info,metrics,prometheus
   endpoint:
     health:
-      show-details: always
+      show-details: never
+  metrics:
+    tags:
+      application: ${spring.application.name}
