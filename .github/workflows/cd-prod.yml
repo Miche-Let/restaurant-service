@@ -83,6 +83,11 @@ jobs:
             --arg POSTGRES_DB "${{ vars.POSTGRES_DB }}" \
             --arg POSTGRES_USER "${{ vars.POSTGRES_USER }}" \
             --arg POSTGRES_PASSWORD "${{ secrets.POSTGRES_PASSWORD }}" \
+            --arg DB_MAX_POOL_SIZE "${{ vars.DB_MAX_POOL_SIZE || '5' }}" \
+            --arg DB_MIN_IDLE "${{ vars.DB_MIN_IDLE || '1' }}" \
+            --arg DB_CONNECTION_TIMEOUT_MS "${{ vars.DB_CONNECTION_TIMEOUT_MS || '3000' }}" \
+            --arg DB_IDLE_TIMEOUT_MS "${{ vars.DB_IDLE_TIMEOUT_MS || '600000' }}" \
+            --arg DB_MAX_LIFETIME_MS "${{ vars.DB_MAX_LIFETIME_MS || '1800000' }}" \
             --arg REDIS_HOST "${{ vars.REDIS_HOST }}" \
             --arg REDIS_PORT "${{ vars.REDIS_PORT }}" \
             --arg EUREKA_ENABLED "${{ vars.EUREKA_ENABLED }}" \
@@ -109,6 +114,12 @@ jobs:
                     {"name":"POSTGRES_DB","value":$POSTGRES_DB},
                     {"name":"POSTGRES_USER","value":$POSTGRES_USER},
                     {"name":"POSTGRES_PASSWORD","value":$POSTGRES_PASSWORD},
+          
+                    {"name":"DB_MAX_POOL_SIZE","value":$DB_MAX_POOL_SIZE},
+                    {"name":"DB_MIN_IDLE","value":$DB_MIN_IDLE},
+                    {"name":"DB_CONNECTION_TIMEOUT_MS","value":$DB_CONNECTION_TIMEOUT_MS},
+                    {"name":"DB_IDLE_TIMEOUT_MS","value":$DB_IDLE_TIMEOUT_MS},
+                    {"name":"DB_MAX_LIFETIME_MS","value":$DB_MAX_LIFETIME_MS},
 
                     {"name":"REDIS_HOST","value":$REDIS_HOST},
                     {"name":"REDIS_PORT","value":$REDIS_PORT},
