@@ -40,17 +40,15 @@
 ### 예약/체크인 시간
 ### 반드시 오늘 날짜 + 현재 시각 기준 30분 이내 slotStartTime으로 수정
 @reservedDate = 2026-05-19
-@slotStartTime = 01:30:00
+@slotStartTime = 02:10:00
 
 ### 타임슬롯 생성 범위
 ### slotStartTime을 포함하도록 openTime/closeTime 설정
-@slotOpenTime = 01:20:00
-@slotCloseTime = 01:50:00
+@slotOpenTime = 02:10:00
+@slotCloseTime = 02:40:00
 @slotIntervalMinutes = 10
 @slotCapacity = 10
 
-@timeSlotId = 16be6eea-d0b4-452d-89e1-3f5976bf8142
-@selectedSlotStartTime = 01:30:00
 
 
 ### ─────────────────────────────────────────────
@@ -362,44 +360,52 @@ Authorization: Bearer {{ownerToken}}
 
 ### ─────────────────────────────────────────────
 ### STEP 8. 타임슬롯 조회
-### slotStartTime과 같은 startTime의 timeSlotId 저장
-### ─────────────────────────────────────────────
 GET {{gatewayUrl}}/api/v1/restaurants/{{restaurantId}}/time-slots?targetDate={{reservedDate}}
 Authorization: Bearer {{userToken}}
 
 > {%
     client.global.clear("timeSlotId");
+    client.global.clear("selectedSlotStartTime");
 
     client.log("타임슬롯 조회 응답");
     client.log(JSON.stringify(response.body, null, 2));
 
     const slots = response.body && response.body.data ? response.body.data : [];
-    const targetStartTime = request.environment.get("slotStartTime") || request.variables.get("slotStartTime");
+    const targetStartTime = "{{slotStartTime}}";
 
     let selected = null;
+
     for (const slot of slots) {
-        if (slot.startTime === targetStartTime) {
+        if (slot.startTime === targetStartTime || slot.slotStartTime === targetStartTime) {
             selected = slot;
             break;
         }
     }
 
-    if (!selected && slots.length > 0) {
-        selected = slots[0];
-        client.log("slotStartTime과 일치하는 slot이 없어 첫 번째 slot 사용: " + JSON.stringify(selected));
-    }
-
-    client.test("타임슬롯 조회 및 선택 성공", function () {
+    client.test("타임슬롯 조회 성공", function () {
         client.assert(response.status === 200, "Expected 200 but got " + response.status);
-        client.assert(selected !== null, "사용 가능한 timeSlot이 없음");
-        client.assert(selected.timeSlotId !== undefined, "timeSlotId 없음");
+        client.assert(Array.isArray(slots), "data가 배열이 아님");
+        client.assert(slots.length > 0, "timeSlot 목록이 비어 있음");
     });
 
-    client.global.set("timeSlotId", selected.timeSlotId);
-    client.global.set("selectedSlotStartTime", selected.startTime);
+    client.test("slotStartTime과 일치하는 타임슬롯 선택", function () {
+        client.assert(
+            selected !== null,
+            "slotStartTime=" + targetStartTime + " 과 일치하는 timeSlot이 없음"
+        );
+    });
 
-    client.log("timeSlotId saved = " + selected.timeSlotId);
-    client.log("selectedSlotStartTime saved = " + selected.startTime);
+    const timeSlotId = selected.timeSlotId || selected.id;
+
+    client.test("timeSlotId 저장 가능", function () {
+        client.assert(timeSlotId !== undefined && timeSlotId !== null, "timeSlotId/id 없음");
+    });
+
+    client.global.set("timeSlotId", timeSlotId);
+    client.global.set("selectedSlotStartTime", targetStartTime);
+
+    client.log("timeSlotId saved = " + timeSlotId);
+    client.log("selectedSlotStartTime saved = " + targetStartTime);
 %}
 
 
