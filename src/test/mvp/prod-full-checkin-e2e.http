@@ -36,7 +36,7 @@
 
 ### 테스트 식당/코스
 ### 중복 문제 나면 숫자만 변경
-@restaurantName = MicheLet Full E2E Test 90212
+@restaurantName = MicheLet CheckIn Event Test
 @courseName = Full E2E Dinner Course 90212
 
 ### 예약/체크인 시간
