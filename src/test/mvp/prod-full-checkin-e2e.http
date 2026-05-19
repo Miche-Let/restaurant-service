@@ -1,0 +1,579 @@
+### 배포환경 restaurant-service + timeslot-service + waiting-service + reservation-service + Kafka 체크인 E2E
+###
+### 실행 전제:
+### 1. API Gateway 터널 열기
+###    ssh -N -i "C:\Users\...\...\michelet-bastion-key.cer" `
+###    -L 19000:10.0.11.237:19000 `
+###    ubuntu@52.79.37.117
+###
+### 2. 아래 순서대로 하나씩 실행
+###    STEP 0 → STEP 1 → ... → STEP 12
+###
+### 3. 체크인 가능 조건
+###    reservedDate = 오늘 날짜
+###    slotStartTime <= 현재 시각 <= slotStartTime + 30분
+###
+###    예:
+###    지금이 10:20이면 slotStartTime = 10:00:00 또는 10:10:00 권장
+
+@gatewayUrl = http://localhost:19000
+
+### 테스트 OWNER 계정
+@ownerLoginId = test90212
+@ownerPassword = test123!0212
+@ownerName = owner90212
+@ownerEmail = owner0090212@naver.com
+@ownerPhone = 010-0000-1013
+
+### 테스트 USER 계정
+@userLoginId = test89
+@userPassword = test123!5
+@userName = user89
+@userEmail = user0089@naver.com
+@userPhone = 010-1000-1005
+
+### 테스트 식당/코스
+### 이미 같은 식당명으로 중복 문제 나면 숫자만 바꾸기
+@restaurantName = MicheLet Full E2E Test 90212
+@courseName = Full E2E Dinner Course 90212
+
+### 예약/체크인 시간
+### 반드시 오늘 날짜 + 현재 시각 기준 30분 이내 slotStartTime으로 수정
+@reservedDate = 2026-05-19
+@slotStartTime = 01:30:00
+
+### 타임슬롯 생성 범위
+### slotStartTime을 포함하도록 openTime/closeTime 설정
+@slotOpenTime = 01:20:00
+@slotCloseTime = 01:50:00
+@slotIntervalMinutes = 10
+@slotCapacity = 10
+
+@timeSlotId = 16be6eea-d0b4-452d-89e1-3f5976bf8142
+@selectedSlotStartTime = 01:30:00
+
+
+### ─────────────────────────────────────────────
+### STEP 0. API Gateway health 확인
+### ─────────────────────────────────────────────
+GET {{gatewayUrl}}/actuator/health
+
+> {%
+    client.log("STEP 0 Gateway health");
+    client.log(response.body);
+
+    client.test("Gateway health 확인", function () {
+        client.assert(response.status === 200, "Expected 200 but got " + response.status);
+    });
+%}
+
+
+### ─────────────────────────────────────────────
+### STEP 1. OWNER 회원가입
+### ─────────────────────────────────────────────
+POST {{gatewayUrl}}/api/v1/users/signup
+Content-Type: application/json
+
+{
+  "loginId": "{{ownerLoginId}}",
+  "password": "{{ownerPassword}}",
+  "name": "{{ownerName}}",
+  "email": "{{ownerEmail}}",
+  "phone": "{{ownerPhone}}",
+  "userRole": "OWNER"
+}
+
+> {%
+    client.log("OWNER 회원가입 응답");
+    client.log(JSON.stringify(response.body, null, 2));
+
+    client.test("OWNER 회원가입 응답 확인", function () {
+        client.assert(
+            response.status === 200 || response.status === 201 || response.status === 409,
+            "Unexpected status: " + response.status
+        );
+    });
+%}
+
+
+### ─────────────────────────────────────────────
+### STEP 2. USER 회원가입
+### ─────────────────────────────────────────────
+POST {{gatewayUrl}}/api/v1/users/signup
+Content-Type: application/json
+
+{
+  "loginId": "{{userLoginId}}",
+  "password": "{{userPassword}}",
+  "name": "{{userName}}",
+  "email": "{{userEmail}}",
+  "phone": "{{userPhone}}",
+  "userRole": "USER"
+}
+
+> {%
+    client.log("USER 회원가입 응답");
+    client.log(JSON.stringify(response.body, null, 2));
+
+    client.test("USER 회원가입 응답 확인", function () {
+        client.assert(
+            response.status === 200 || response.status === 201 || response.status === 409,
+            "Unexpected status: " + response.status
+        );
+    });
+%}
+
+
+### ─────────────────────────────────────────────
+### STEP 3. OWNER 로그인
+### ownerToken, ownerId 저장
+### ─────────────────────────────────────────────
+POST {{gatewayUrl}}/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "loginId": "{{ownerLoginId}}",
+  "password": "{{ownerPassword}}"
+}
+
+> {%
+    client.global.clear("ownerToken");
+    client.global.clear("ownerId");
+
+    let token = null;
+
+    if (response.body && response.body.data && response.body.data.accessToken) {
+        token = response.body.data.accessToken;
+    } else if (response.body && response.body.data && response.body.data.token) {
+        token = response.body.data.token;
+    } else if (response.body && response.body.accessToken) {
+        token = response.body.accessToken;
+    } else if (response.body && response.body.token) {
+        token = response.body.token;
+    }
+
+    if (!token) {
+        client.log(JSON.stringify(response.body, null, 2));
+        throw new Error("OWNER accessToken을 찾지 못했습니다.");
+    }
+
+    client.global.set("ownerToken", token);
+
+    let payloadBase64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+    payloadBase64 += "=".repeat((4 - payloadBase64.length % 4) % 4);
+
+    const payload = JSON.parse(atob(payloadBase64));
+
+    client.global.set("ownerId", payload["sub"]);
+
+    client.test("OWNER 로그인 성공", function () {
+        client.assert(response.status === 200, "Expected 200 but got " + response.status);
+        client.assert(token !== null, "ownerToken 저장 실패");
+    });
+
+    client.log("ownerToken saved");
+    client.log("ownerId saved = " + payload["sub"]);
+%}
+
+
+### ─────────────────────────────────────────────
+### STEP 4. USER 로그인
+### userToken, userId 저장
+### ─────────────────────────────────────────────
+POST {{gatewayUrl}}/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "loginId": "{{userLoginId}}",
+  "password": "{{userPassword}}"
+}
+
+> {%
+    client.global.clear("userToken");
+    client.global.clear("userId");
+
+    let token = null;
+
+    if (response.body && response.body.data && response.body.data.accessToken) {
+        token = response.body.data.accessToken;
+    } else if (response.body && response.body.data && response.body.data.token) {
+        token = response.body.data.token;
+    } else if (response.body && response.body.accessToken) {
+        token = response.body.accessToken;
+    } else if (response.body && response.body.token) {
+        token = response.body.token;
+    }
+
+    if (!token) {
+        client.log(JSON.stringify(response.body, null, 2));
+        throw new Error("USER accessToken을 찾지 못했습니다.");
+    }
+
+    client.global.set("userToken", token);
+
+    let payloadBase64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+    payloadBase64 += "=".repeat((4 - payloadBase64.length % 4) % 4);
+
+    const payload = JSON.parse(atob(payloadBase64));
+
+    client.global.set("userId", payload["sub"]);
+
+    client.test("USER 로그인 성공", function () {
+        client.assert(response.status === 200, "Expected 200 but got " + response.status);
+        client.assert(token !== null, "userToken 저장 실패");
+    });
+
+    client.log("userToken saved");
+    client.log("userId saved = " + payload["sub"]);
+%}
+
+
+### ─────────────────────────────────────────────
+### STEP 5. 식당 등록
+### restaurantId 저장
+### ─────────────────────────────────────────────
+POST {{gatewayUrl}}/api/v1/restaurants
+Content-Type: application/json
+Authorization: Bearer {{ownerToken}}
+
+{
+  "name": "{{restaurantName}}",
+  "address": "서울특별시 강남구 테헤란로 123",
+  "phone": "02-1234-5678",
+  "description": "배포환경 풀 E2E 테스트용 레스토랑",
+  "reservationOpenAt": "10:00:00",
+  "avgMealDurationMin": 90,
+  "status": "OPEN",
+  "businessHours": "MON-FRI 11:00-20:00 / SAT,SUN CLOSED"
+}
+
+> {%
+    client.global.clear("restaurantId");
+
+    const data = response.body && response.body.data ? response.body.data : null;
+    const restaurantId = data && data.restaurantId ? data.restaurantId : null;
+
+    client.log("식당 등록 응답");
+    client.log(JSON.stringify(response.body, null, 2));
+
+    client.test("식당 등록 성공", function () {
+        client.assert(response.status === 200 || response.status === 201,
+            "Expected 200/201 but got " + response.status);
+        client.assert(restaurantId !== null, "restaurantId 반환 없음");
+    });
+
+    client.global.set("restaurantId", restaurantId);
+    client.log("restaurantId saved = " + restaurantId);
+%}
+
+
+### ─────────────────────────────────────────────
+### STEP 6. 코스 등록
+### courseId 저장
+### ─────────────────────────────────────────────
+POST {{gatewayUrl}}/api/v1/restaurants/{{restaurantId}}/courses
+Content-Type: application/json
+Authorization: Bearer {{ownerToken}}
+
+{
+  "name": "{{courseName}}",
+  "price": 150000,
+  "sessionType": "DINNER",
+  "status": "AVAILABLE",
+  "menus": [
+    {
+      "coursePart": "AMUSE_BOUCHE",
+      "menuName": "한우 타르타르",
+      "sortOrder": 1
+    },
+    {
+      "coursePart": "APPETIZER",
+      "menuName": "제철 샐러드",
+      "sortOrder": 2
+    },
+    {
+      "coursePart": "FISH",
+      "menuName": "제철 생선 구이",
+      "sortOrder": 3
+    },
+    {
+      "coursePart": "MAIN",
+      "menuName": "양갈비",
+      "sortOrder": 4
+    },
+    {
+      "coursePart": "DESSERT",
+      "menuName": "바닐라 무스",
+      "sortOrder": 5
+    }
+  ]
+}
+
+> {%
+    client.global.clear("courseId");
+
+    const data = response.body && response.body.data ? response.body.data : null;
+    const courseId = data && data.courseId ? data.courseId : null;
+
+    client.log("코스 등록 응답");
+    client.log(JSON.stringify(response.body, null, 2));
+
+    client.test("코스 등록 성공", function () {
+        client.assert(response.status === 200 || response.status === 201,
+            "Expected 200/201 but got " + response.status);
+        client.assert(courseId !== null, "courseId 반환 없음");
+    });
+
+    client.global.set("courseId", courseId);
+    client.log("courseId saved = " + courseId);
+%}
+
+
+### ─────────────────────────────────────────────
+### STEP 7. 타임슬롯 일괄 생성
+###
+### reservedDate가 오늘이고 slotStartTime이 현재 기준 30분 내 체크인 가능하도록
+### slotOpenTime / slotCloseTime을 맞춰야 함
+### ─────────────────────────────────────────────
+POST {{gatewayUrl}}/api/v1/restaurants/{{restaurantId}}/time-slots/bulk
+Content-Type: application/json
+Authorization: Bearer {{ownerToken}}
+
+{
+  "startDate": "{{reservedDate}}",
+  "endDate": "{{reservedDate}}",
+  "openTime": "{{slotOpenTime}}",
+  "closeTime": "{{slotCloseTime}}",
+  "intervalMinutes": {{slotIntervalMinutes}},
+  "capacity": {{slotCapacity}}
+}
+
+> {%
+    client.log("타임슬롯 일괄 생성 응답");
+    client.log(JSON.stringify(response.body, null, 2));
+
+    client.test("타임슬롯 일괄 생성 성공", function () {
+        client.assert(response.status === 200 || response.status === 201,
+            "Expected 200/201 but got " + response.status);
+        client.assert(response.body.success === true, "타임슬롯 생성 success=false");
+    });
+%}
+
+
+### ─────────────────────────────────────────────
+### STEP 8. 타임슬롯 조회
+### slotStartTime과 같은 startTime의 timeSlotId 저장
+### ─────────────────────────────────────────────
+GET {{gatewayUrl}}/api/v1/restaurants/{{restaurantId}}/time-slots?targetDate={{reservedDate}}
+Authorization: Bearer {{userToken}}
+
+> {%
+    client.global.clear("timeSlotId");
+
+    client.log("타임슬롯 조회 응답");
+    client.log(JSON.stringify(response.body, null, 2));
+
+    const slots = response.body && response.body.data ? response.body.data : [];
+    const targetStartTime = request.environment.get("slotStartTime") || request.variables.get("slotStartTime");
+
+    let selected = null;
+    for (const slot of slots) {
+        if (slot.startTime === targetStartTime) {
+            selected = slot;
+            break;
+        }
+    }
+
+    if (!selected && slots.length > 0) {
+        selected = slots[0];
+        client.log("slotStartTime과 일치하는 slot이 없어 첫 번째 slot 사용: " + JSON.stringify(selected));
+    }
+
+    client.test("타임슬롯 조회 및 선택 성공", function () {
+        client.assert(response.status === 200, "Expected 200 but got " + response.status);
+        client.assert(selected !== null, "사용 가능한 timeSlot이 없음");
+        client.assert(selected.timeSlotId !== undefined, "timeSlotId 없음");
+    });
+
+    client.global.set("timeSlotId", selected.timeSlotId);
+    client.global.set("selectedSlotStartTime", selected.startTime);
+
+    client.log("timeSlotId saved = " + selected.timeSlotId);
+    client.log("selectedSlotStartTime saved = " + selected.startTime);
+%}
+
+
+### ─────────────────────────────────────────────
+### STEP 9. 대기열 입장
+### queueToken 저장
+### ─────────────────────────────────────────────
+POST {{gatewayUrl}}/api/v1/waitings
+Content-Type: application/json
+Authorization: Bearer {{userToken}}
+
+{
+  "restaurantId": "{{restaurantId}}"
+}
+
+> {%
+    client.global.clear("queueToken");
+    client.global.clear("waitingId");
+    client.global.clear("waitingAccessToken");
+
+    client.log("대기열 입장 응답");
+    client.log(JSON.stringify(response.body, null, 2));
+
+    const data = response.body && response.body.data ? response.body.data : null;
+
+    client.test("대기열 입장 성공", function () {
+        client.assert(response.status === 200 || response.status === 201,
+            "Expected 200/201 but got " + response.status);
+        client.assert(data !== null, "data 없음");
+        client.assert(data.token !== undefined, "대기열 token 없음");
+    });
+
+    client.global.set("queueToken", data.token);
+    client.global.set("waitingId", data.waitingId);
+
+    client.log("queueToken saved = " + data.token);
+    client.log("waitingId saved = " + data.waitingId);
+%}
+
+
+### ─────────────────────────────────────────────
+### STEP 10. 대기열 상태 조회
+###
+### 대기열 입장 직후 status는 WAITING일 수 있음
+### waiting-service scheduler가 10초마다 ACTIVE 전환
+### status가 ACTIVE가 되고 accessToken이 내려올 때까지 10~20초 간격으로 여러 번 실행
+### ─────────────────────────────────────────────
+GET {{gatewayUrl}}/api/v1/waitings/status?token={{queueToken}}
+Authorization: Bearer {{userToken}}
+
+> {%
+    client.global.clear("waitingAccessToken");
+
+    client.log("대기열 상태 조회 응답");
+    client.log(JSON.stringify(response.body, null, 2));
+
+    const data = response.body && response.body.data ? response.body.data : null;
+
+    client.test("대기열 상태 조회 성공", function () {
+        client.assert(response.status === 200, "Expected 200 but got " + response.status);
+        client.assert(data !== null, "data 없음");
+        client.assert(data.status !== undefined, "status 없음");
+    });
+
+    if (data && data.status === "ACTIVE" && data.accessToken) {
+        client.global.set("waitingAccessToken", data.accessToken);
+        client.log("waitingAccessToken saved = " + data.accessToken);
+    } else {
+        client.log("아직 ACTIVE가 아니거나 accessToken 없음. 10초 뒤 STEP 10을 다시 실행하세요.");
+    }
+%}
+
+
+### ─────────────────────────────────────────────
+### STEP 11. 예약 생성
+###
+### X-Waiting-Token에는 queueToken이 아니라 ACTIVE 상태에서 받은 waitingAccessToken을 넣어야 함
+### STEP 10에서 accessToken 저장 후 실행
+### ─────────────────────────────────────────────
+POST {{gatewayUrl}}/api/v1/reservations
+Content-Type: application/json
+Authorization: Bearer {{userToken}}
+X-Waiting-Token: {{waitingAccessToken}}
+Idempotency-Key: reservation-full-e2e-90212-{{$timestamp}}
+
+{
+  "restaurantId": "{{restaurantId}}",
+  "timeSlotId": "{{timeSlotId}}",
+  "reservedDate": "{{reservedDate}}",
+  "slotStartTime": "{{selectedSlotStartTime}}",
+  "guestCount": 2,
+  "courses": [
+    {
+      "courseId": "{{courseId}}",
+      "quantity": 1,
+      "unitPrice": 150000
+    }
+  ]
+}
+
+> {%
+    client.global.clear("reservationId");
+
+    client.log("예약 생성 응답");
+    client.log(JSON.stringify(response.body, null, 2));
+
+    const data = response.body && response.body.data ? response.body.data : null;
+    const reservationId = data && data.reservationId ? data.reservationId : null;
+
+    client.test("예약 생성 성공", function () {
+        client.assert(response.status === 200 || response.status === 201,
+            "Expected 200/201 but got " + response.status);
+        client.assert(response.body.success === true, "예약 생성 success=false");
+        client.assert(reservationId !== null, "reservationId 반환 없음");
+    });
+
+    client.global.set("reservationId", reservationId);
+    client.log("reservationId saved = " + reservationId);
+%}
+
+
+### ─────────────────────────────────────────────
+### STEP 12. 예약 상세 조회
+### ─────────────────────────────────────────────
+GET {{gatewayUrl}}/api/v1/reservations/{{reservationId}}
+Authorization: Bearer {{userToken}}
+
+> {%
+    client.log("예약 상세 조회 응답");
+    client.log(JSON.stringify(response.body, null, 2));
+
+    client.test("예약 상세 조회 성공", function () {
+        client.assert(response.status === 200, "Expected 200 but got " + response.status);
+        client.assert(response.body.success === true, "success 값이 true가 아님");
+    });
+%}
+
+
+### ─────────────────────────────────────────────
+### STEP 13. 체크인 처리
+###
+### 체크인 가능 조건:
+### 예약 시작 시간 <= 현재 시각 <= 예약 시작 시간 + 30분
+### 실패하면 reservedDate / slotStartTime을 현재 시각 기준으로 조정하고 STEP 7부터 다시 실행
+### ─────────────────────────────────────────────
+PATCH {{gatewayUrl}}/api/v1/restaurants/{{restaurantId}}/reservations/{{reservationId}}/check-in
+Authorization: Bearer {{ownerToken}}
+
+> {%
+    client.log("체크인 처리 응답");
+    client.log(JSON.stringify(response.body, null, 2));
+
+    client.test("체크인 처리 성공", function () {
+        client.assert(response.status === 200, "Expected 200 but got " + response.status);
+        client.assert(response.body.success === true, "체크인 처리 success=false");
+    });
+%}
+
+
+### ─────────────────────────────────────────────
+### STEP 14. 체크인 중복 호출 확인
+### 기대값은 정책에 따라 200 / 400 / 409 중 하나 가능
+### ─────────────────────────────────────────────
+PATCH {{gatewayUrl}}/api/v1/restaurants/{{restaurantId}}/reservations/{{reservationId}}/check-in
+Authorization: Bearer {{ownerToken}}
+
+> {%
+    client.log("체크인 중복 처리 응답");
+    client.log(JSON.stringify(response.body, null, 2));
+
+    client.test("체크인 중복 호출 응답 확인", function () {
+        client.assert(
+            response.status === 200 || response.status === 400 || response.status === 409,
+            "Expected 200/400/409 but got " + response.status
+        );
+    });
+%}
